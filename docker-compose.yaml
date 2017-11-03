@@ -1,0 +1,26 @@
+
+version: '2'
+services:
+  mp_app:
+    build: ./app
+    container_name: mp_app
+    image: mp_app
+    environment:
+      - VIRTUAL_HOST=local.dev
+    volumes:
+      - /opt/local/apache2/htdocs:/var/www/html2
+  mp_db:
+    build: ./db
+    container_name: mp_db
+    image: mp_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=example
+      - MYSQL_DATABASE=example
+  mp_proxy:
+    build: ./proxy
+    container_name: mp_proxy
+    image: mp_proxy
+    ports:
+      - 80:80
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
