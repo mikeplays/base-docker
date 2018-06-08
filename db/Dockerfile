@@ -1,4 +1,4 @@
-FROM mysql
+FROM mysql:5.6.40
 MAINTAINER mikejw3@gmail.com
 
 ENV MYSQL_ROOT_PASSWORD example
