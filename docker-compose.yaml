@@ -9,7 +9,7 @@ services:
       - VIRTUAL_HOST=dev.org
       - VIRTUAL_PORT=80
     volumes:
-      - /opt/local/apache2/htdocs:/var/www:cached
+      - /home/mike/code/news/server:/var/www:cached
   mp_db:
     build: ./db
     container_name: mp_db
@@ -21,14 +21,14 @@ services:
 # if using 'global' nginx proxy setup
 # this contiainer is not required
 # and specify (uncomment) the network settings below
- mp_proxy:
-   build: ./proxy
-   container_name: mp_proxy
-   image: mp_proxy
-   ports:
-     - 80:80
-   volumes:
-     - /var/run/docker.sock:/tmp/docker.sock:ro
+  mp_proxy:
+    build: ./proxy
+    container_name: mp_proxy
+    image: mp_proxy
+    ports:
+      - 80:80
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
 
 # networks:
 #   default:
