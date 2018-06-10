@@ -1,0 +1,11 @@
+mysqld, Version: 5.6.40-log (MySQL Community Server (GPL)). started with:
+Tcp port: 0  Unix socket: /var/run/mysqld/mysqld.sock
+Time                 Id Command    Argument
+# Time: 180610  8:29:07
+# User@Host: root[root] @ localhost []  Id:     3
+# Query_time: 0.000128  Lock_time: 0.000047 Rows_sent: 0  Rows_examined: 6
+SET timestamp=1528619347;
+DELETE FROM mysql.user WHERE user NOT IN ('mysql.sys', 'mysqlxsys', 'root') OR host NOT IN ('localhost');
+mysqld, Version: 5.6.40-log (MySQL Community Server (GPL)). started with:
+Tcp port: 0  Unix socket: /var/run/mysqld/mysqld.sock
+Time                 Id Command    Argument

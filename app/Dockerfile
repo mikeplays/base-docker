@@ -23,3 +23,6 @@ RUN a2enmod proxy_http && a2enmod proxy_wstunnel && /etc/init.d/apache2 restart
 COPY 000-default.conf /etc/apache2/sites-available/
 RUN a2enmod rewrite && /etc/init.d/apache2 restart
 
+WORKDIR /var/www
+
+
