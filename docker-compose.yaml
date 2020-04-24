@@ -1,19 +1,17 @@
 
 version: '2'
 services:
-  mp_app:
-    build: ./app
-    container_name: mp_app
-    image: mp_app
+  app:
+    container_name: app
+    image: registry.gitlab.com/gigabyte-software/unicorn/app-php-test-wnode:latest
     environment:
       - VIRTUAL_HOST=dev.org
       - VIRTUAL_PORT=80
     volumes:
-    - /Users/mikewhiting/code/empath:/var/www/project:cached
-  mp_db:
-    build: ./db
-    container_name: mp_db
-    image: mp_db
+    - /home/mike/code/victor2:/var/www/project:cached
+  db:
+    container_name: db
+    image: registry.gitlab.com/gigabyte-software/unicorn/mysql:latest
     volumes:
       - "./db/log:/var/log/mysql"
     restart: unless-stopped
