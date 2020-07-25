@@ -30,6 +30,33 @@
           docker_compose:
             project_src: "{{ playbook_dir }}"
             state: present
+        - name: detect dump file
+          stat:
+            path: "{{ code_dir }}/{{ project }}/dump.sql"
+          register: st
+        - name: output stat
+          debug:
+            var: st
+        - name: populate db (dump)
+          command: "docker exec -u www-data app php ./vendor/bin/empathy --mysql populate"
+          when: st.stat.exists == true
+        - name: populate db (setup)
+          command: "docker exec -u www-data app php ./vendor/bin/empathy --mysql setup"
+          when: st.stat.exists == false
+        - name: detect react dir
+          stat:
+            path: "{{ code_dir }}/{{ project }}/react"
+          register: st
+        - name: output stat
+          debug:
+            var: st
+        - name: kill any pre-existing webpack dev server
+          shell: "(killall node 2>/dev/null)"
+          ignore_errors: yes
+          when: st.stat.exists == true
+        - name: run webpack
+          shell: "(cd {{ code_dir }}/{{ project }}/react; npm run dev >> {{ playbook_dir }}/react.log 2>&1 &)"
+          when: st.stat.exists == true
       when: operation == "boot"
     - name: switch
       block:
