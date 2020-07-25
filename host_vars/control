@@ -1,0 +1,10 @@
+---
+ansible_connection: local
+ansible_host: 127.0.0.1
+ansible_become: false
+code_dir: /home/mike/code
+project: "my_project"
+settings_dir: ~/.config/base-docker
+settings_file: base-docker.ini
+ansible_python_interpreter: /usr/bin/python3.7
+...

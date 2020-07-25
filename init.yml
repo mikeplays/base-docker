@@ -1,0 +1,12 @@
+---
+- hosts: control
+  gather_facts: no
+  tasks:
+    - name: create config directory
+      file:
+        path: "{{ settings_dir }}"
+        state: directory
+    - name: populate settings file
+      template:
+        src: "{{ playbook_dir }}/env/base-docker.j2"
+        dest: "{{ settings_dir }}/{{ settings_file }}"

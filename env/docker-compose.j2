@@ -8,7 +8,7 @@ services:
       - VIRTUAL_HOST=dev.org
       - VIRTUAL_PORT=80
     volumes:
-    - /home/mike/code/victor2:/var/www/project:cached
+    - {{ code_dir }}/{{ project }}:/var/www/project
   db:
     container_name: db
     image: registry.gitlab.com/gigabyte-software/unicorn/mysql:latest
@@ -17,15 +17,15 @@ services:
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=example
-      - MYSQL_DATABASE=example
+      - MYSQL_DATABASE=project
 
 # if using 'global' nginx proxy setup
 # this contiainer is not required
 # and specify (uncomment) the network settings below
-  mp_proxy:
+  proxy:
     build: ./proxy
-    container_name: mp_proxy
-    image: mp_proxy
+    container_name: proxy
+    image: proxy
     ports:
       - 80:80
     volumes:
