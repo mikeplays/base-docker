@@ -30,6 +30,13 @@
           docker_compose:
             project_src: "{{ playbook_dir }}"
             state: present
+        - name: detect build
+          stat:
+            path: "{{ code_dir }}/{{ project }}/vendor"
+          register: st
+        - name: build
+          command: "docker exec -u www-data app ant"
+          when: st.stat.exists == false
         - name: detect dump file
           stat:
             path: "{{ code_dir }}/{{ project }}/dump.sql"
