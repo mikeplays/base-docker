@@ -2,7 +2,21 @@
 Base Docker
 ===
 
+About
+---
 Soon to be named something else?
+
+
+Getting starting
+---
+
+First steps. Initialise virtualenv. On a Mac:
+
+    brew install virtualenv
+    virtualenv ./python
+
+Usage
+---
 
 Initialise config on new machine:
 
@@ -19,11 +33,7 @@ Boot current project:
     ansible-playbook main.yml -e "op=boot"
 
 
-Host machine requires to be installed:
-* pip
-* (python) virtualenv
-
-Be wary of `ansible_python_interpreter` setting on "control" host vars.
-
-Run command in the background from ansible:
+Misc.
+---
+Run command in the background from Ansible:
 https://stackoverflow.com/questions/39347379/ansible-run-command-on-remote-host-in-background
