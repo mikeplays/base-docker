@@ -35,7 +35,16 @@
             path: "{{ code_dir }}/{{ project }}/vendor"
           register: st
         - name: build
-          command: "docker exec -u www-data app ant"
+          shell: |
+            docker exec -u www-data app ant
+            docker exec -u www-data app php ./vendor/bin/empathy --set_docroot /var/www/project
+            docker exec -u www-data app php ./vendor/bin/empathy --set_webroot dev.org
+            docker exec -u www-data app php ./vendor/bin/empathy --set_publicdir ""
+            docker exec -u www-data app php ./vendor/bin/empathy --misc tpl_cache
+            docker exec -u www-data app php ./vendor/bin/empathy --set_dbserver db
+            docker exec -u www-data app php ./vendor/bin/empathy --set_dbuser root
+            docker exec -u www-data app php ./vendor/bin/empathy --set_dbpass example
+            docker exec -u www-data app php ./vendor/bin/empathy --set_dbname project
           when: st.stat.exists == false
         - name: detect dump file
           stat:
