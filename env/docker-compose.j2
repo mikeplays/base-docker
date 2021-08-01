@@ -11,7 +11,7 @@ services:
     - {{ code_dir }}/{{ project }}:/var/www/project
   db:
     container_name: db
-    image: registry.gitlab.com/gigabyte-software/unicorn/mysql:latest
+    image: mysql:5.7
     volumes:
       - "./db/log:/var/log/mysql"
     restart: unless-stopped
