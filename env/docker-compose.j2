@@ -5,7 +5,7 @@ services:
     container_name: app
     image: registry.gitlab.com/gigabyte-software/unicorn/app-php-test-wnode:latest
     environment:
-      - VIRTUAL_HOST=dev.org
+      - VIRTUAL_HOST=www.dev.org
       - VIRTUAL_PORT=80
     volumes:
     - {{ code_dir }}/{{ project }}:/var/www/project
