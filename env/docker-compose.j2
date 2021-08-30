@@ -1,6 +1,9 @@
 
 version: '2'
 services:
+  cache:
+    container_name: cache
+    image: memcached:1.6.10
   app:
     container_name: app
     image: registry.gitlab.com/gigabyte-software/unicorn/app-php-test-wnode:latest
