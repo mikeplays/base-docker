@@ -21,6 +21,8 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=example
       - MYSQL_DATABASE=project
+    ports:
+      - 3306:3306
 
 # if using 'global' nginx proxy setup
 # this contiainer is not required
