@@ -4,6 +4,7 @@ services:
   cache:
     container_name: cache
     image: memcached:1.6.10
+    platform: linux/x86_64
   app:
     container_name: app
     image: registry.gitlab.com/gigabyte-software/unicorn/app-php-test-wnode:latest
@@ -15,6 +16,7 @@ services:
   db:
     container_name: db
     image: mysql:5.7
+    platform: linux/x86_64
     volumes:
       - "./db/log:/var/log/mysql"
     restart: unless-stopped
