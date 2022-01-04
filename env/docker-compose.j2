@@ -18,7 +18,6 @@ services:
     container_name: db
     platform: linux/x86_64
     image: mysql:5.7
-    platform: linux/x86_64
     volumes:
       - "./db/log:/var/log/mysql"
     restart: unless-stopped
@@ -34,6 +33,7 @@ services:
   proxy:
     build: ./proxy
     container_name: proxy
+    platform: linux/x86_64
     image: proxy
     ports:
       - 80:80
