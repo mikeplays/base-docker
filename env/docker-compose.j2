@@ -1,5 +1,5 @@
 
-version: '2'
+version: '3'
 services:
   cache:
     container_name: cache
@@ -33,7 +33,6 @@ services:
   proxy:
     build: ./proxy
     container_name: proxy
-    platform: linux/x86_64
     image: proxy
     ports:
       - 80:80
