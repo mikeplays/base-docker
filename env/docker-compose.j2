@@ -30,7 +30,7 @@ services:
 # this contiainer is not required
 # and specify (uncomment) the network settings below
   proxy:
-    build: ./proxy
+    image: jwilder/nginx-proxy
     container_name: proxy
     image: proxy
     ports:
