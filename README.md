@@ -6,6 +6,11 @@ About
 ---
 Soon to be named something else?
 
+Licence
+---
+Now distributed under an
+MIT license.  See [LICENSE](./LICENSE).
+
 
 Getting starting
 ---
