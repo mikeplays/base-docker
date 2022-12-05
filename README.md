@@ -35,11 +35,13 @@ Usage
 
 #####Initialise config on new machine:
 
+
     ansible-playbook init.yml
 
 (Creates settings file in ~/.config)
 
 #####Switch project:
+
 
     ansible-playbook main.yml -e "op=switch cb=a.ce"
 
@@ -48,10 +50,12 @@ In the above example the project found in `~/code/a.ce` will be set as active.
 
 #####Boot current project:
 
+
     ansible-playbook main.yml -e "op=boot"
 
 
 #####ontend
+
 
 If you have frontend code in the (monolithic)) project code-base sub-directory `/react`, (ideally React code), it will also attempt to run this in the background with:
 
