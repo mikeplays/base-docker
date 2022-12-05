@@ -50,6 +50,10 @@ Boot current project:
 
     ansible-playbook main.yml -e "op=boot"
 
+If you have frontend code in the project sub-directory `/react` (ideally React code), it will also attempt to run this in the background with:
+
+    `npm run dev`
+
 
 Misc.
 ---
