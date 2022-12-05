@@ -43,6 +43,9 @@ Switch project:
 
     ansible-playbook main.yml -e "op=switch cb=a.ce"
 
+In the above example the project found in `~/code/a.ce` will be set as active.
+    
+
 Boot current project:
 
     ansible-playbook main.yml -e "op=boot"
