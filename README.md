@@ -33,20 +33,20 @@ First steps. Initialise virtualenv. On a Mac:
 Usage
 ---
 
-###Initialise config on new machine:
+######Initialise config on new machine:
 
     ansible-playbook init.yml
 
 (Creates settings file in ~/.config)
 
-###Switch project:
+######Switch project:
 
     ansible-playbook main.yml -e "op=switch cb=a.ce"
 
 In the above example the project found in `~/code/a.ce` will be set as active.
     
 
-###Boot current project:
+######Boot current project:
 
     ansible-playbook main.yml -e "op=boot"
 
