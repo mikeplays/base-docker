@@ -6,6 +6,16 @@ About
 ---
 Soon to be named something else?
 
+
+A local dev environment for Empathy apps. You must have Docker and Ansible installed.
+
+Also create a `/etc/hosts` file entry for `www.dev.org`:
+
+
+    127.0.0.1	localhost www.dev.org
+
+More info coming soon...
+
 Licence
 ---
 Now distributed under an
