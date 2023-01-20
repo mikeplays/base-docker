@@ -6,6 +6,16 @@ About
 ---
 Soon to be named something else?
 
+
+A local dev environment for Empathy apps. You must have Docker and Ansible installed.
+
+Also create a `/etc/hosts` file entry for `www.dev.org`:
+
+
+    127.0.0.1	localhost www.dev.org
+
+More info coming soon...
+
 Licence
 ---
 Now distributed under an
@@ -23,19 +33,37 @@ First steps. Initialise virtualenv. On a Mac:
 Usage
 ---
 
-Initialise config on new machine:
+##### Initialise config on new machine:
+
 
     ansible-playbook init.yml
 
 (Creates settings file in ~/.config)
 
-Switch project:
+##### Switch project:
+
 
     ansible-playbook main.yml -e "op=switch cb=a.ce"
 
-Boot current project:
+In the above example the project found in `~/code/a.ce` will be set as active.
+    
+
+##### Boot current project:
+
 
     ansible-playbook main.yml -e "op=boot"
+
+
+##### Frontend
+
+
+If you have frontend code in the (monolithic)) project code-base sub-directory `/react`, (ideally React code), it will also attempt to run this in the background with:
+
+    `npm run dev`
+
+This will also log to the file `/react.log` in the 'base-docker' project.  Kill process with:
+
+    killall node
 
 
 Misc.
