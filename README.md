@@ -7,7 +7,9 @@ About
 Soon to be named something else?
 
 
-A local dev environment for Empathy apps. You must have Docker and Ansible installed.
+A local dev environment for working on one *or more* Empathy apps. (See https://github.com/mikejw/empathy.)
+
+You must have Docker and Ansible installed.
 
 Also create a `/etc/hosts` file entry for `www.dev.org`:
 
