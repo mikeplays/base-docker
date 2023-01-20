@@ -68,6 +68,17 @@ This will also log to the file `/react.log` in the 'base-docker' project.  Kill 
     killall node
 
 
+Caveats
+---
+The default `app` container has apcu cache enabled for reading `config.yml` files and dependency injection `services.php` definition files.
+
+Restart the app container after making changes to these files.
+
+    docker stop app
+    docker start app
+
+
+
 Misc.
 ---
 Run command in the background from Ansible:
