@@ -59,7 +59,7 @@ In the above example the project found in `~/code/a.ce` will be set as active.
 ##### Frontend
 
 
-If you have frontend code in the (monolithic)) project code-base sub-directory `/react`, (ideally React code), it will also attempt to run this in the background with:
+If you have frontend code in the (monolithic) project code-base sub-directory `/react`, (ideally React code), it will also attempt to run this in the background with:
 
     `npm run dev`
 
