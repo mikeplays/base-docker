@@ -1,5 +1,6 @@
 
-# "cb" - shortened codebase
+# "cb" = shortened for codebase
+# "qs" = shortened for quick starts
 ---
 - hosts: control
   vars:
@@ -7,6 +8,7 @@
     saved_project: "{{ lookup('ini', project_ini_string) }}"
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
     project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
+    template: "{{ (tpl is defined) | ternary(tpl, 'vanilla') }}"
   gather_facts: no
   tasks:
     - name: default
@@ -22,14 +24,27 @@
             virtualenv: "{{ playbook_dir }}/python"
             name:
               - docker-compose
+              - psutil
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
             dest: "{{ playbook_dir }}/docker-compose.yml"
+        - name: stop any existing containers
+          docker_compose:
+            project_src: "{{ playbook_dir }}"
+            state: absent
         - name: boot containers
           docker_compose:
             project_src: "{{ playbook_dir }}"
             state: present
+        # is below possible when
+        # potentially an open docker port is
+        # being detected?
+        # (setting approximate delay)
+        - name: wait for db
+          ansible.builtin.wait_for:
+            port: 3306
+            delay: 20
         - name: detect build
           stat:
             path: "{{ code_dir }}/{{ project }}/vendor"
@@ -46,19 +61,20 @@
             docker exec -u www-data app php ./vendor/bin/empathy --set_dbpass example
             docker exec -u www-data app php ./vendor/bin/empathy --set_dbname project
           when: st.stat.exists == false
-        - name: detect dump file
+        - name: detect db setup file
+          stat:
+            path: "{{ code_dir }}/{{ project }}/setup.sql"
+          register: stsetup
+        - name: detect db dump file
           stat:
             path: "{{ code_dir }}/{{ project }}/dump.sql"
-          register: st
-        - name: output stat
-          debug:
-            var: st
+          register: stdump
         - name: populate db (dump)
-          command: "docker exec -u www-data app php ./vendor/bin/empathy --mysql populate"
-          when: st.stat.exists == true
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql populate"
+          when: stsetup.stat.exists and stdump.stat.exists
         - name: populate db (setup)
-          command: "docker exec -u www-data app php ./vendor/bin/empathy --mysql setup"
-          when: st.stat.exists == false
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
+          when: stsetup.stat.exists and not stdump.stat.exists
         - name: detect react dir
           stat:
             path: "{{ code_dir }}/{{ project }}/react"
@@ -81,3 +97,96 @@
             src: "{{ playbook_dir }}/env/base-docker.j2"
             dest: "{{ settings_dir }}/{{ settings_file }}"
       when: operation == "switch"
+    - name: qs
+      block:
+        - name: detect dir name
+          stat:
+            path: "{{ code_dir }}/{{ project }}"
+          register: st
+        - name: exit if dir exists
+          ansible.builtin.fail:
+            msg: Directory exists.
+          when: st.stat.exists == true
+        - name: create directory
+          file:
+            path: "{{ code_dir }}/{{ project }}"
+            state: directory
+        - name: populate composer config
+          template:
+            src: "{{ playbook_dir }}/env/composer.j2"
+            dest: "{{ code_dir }}/{{ project }}/composer.json"
+        - name: download composer
+          ansible.builtin.get_url:
+            url: https://getcomposer.org/composer.phar
+            dest: "{{ code_dir }}/{{ project }}"
+        - name: install python docker
+          pip:
+            virtualenv: "{{ playbook_dir }}/python"
+            name:
+              - docker-compose
+              - pexpect
+        - name: populate docker-compose
+          template:
+            src: "{{ playbook_dir }}/env/docker-compose.j2"
+            dest: "{{ playbook_dir }}/docker-compose.yml"
+        - name: stop any existing containers
+          docker_compose:
+            project_src: "{{ playbook_dir }}"
+            state: absent
+        - name: boot containers
+          docker_compose:
+            project_src: "{{ playbook_dir }}"
+            state: present
+        - name: composer install
+          shell: docker exec -i -u www-data app php ./composer.phar install
+        - name: set up app
+          expect:
+            command: docker exec -i -u www-data app php ./vendor/bin/empathy --new_app
+            responses:
+              'Please enter document root': "/var/www/project"
+              'Please enter name': "{{ project }}"
+              'Please enter web root': "www.dev.org"
+        - name: npm install
+          shell: docker exec -i -u www-data app npm install
+        - name: grunt
+          shell: docker exec -i -u www-data app make grunt
+        - name: saving active project
+          template:
+            src: "{{ playbook_dir }}/env/base-docker.j2"
+            dest: "{{ settings_dir }}/{{ settings_file }}"
+      when: operation == "qs"
+    - name: qs elib-base template
+      block:
+        - name: read dd
+          slurp:
+            src: "{{ code_dir }}/{{ project }}/vendor/mikejw/elib-base/dd.sql"
+          register: dd
+        - name: populate setup
+          template:
+            src: "{{ playbook_dir }}/env/setup.j2"
+            dest: "{{ code_dir }}/{{ project }}/setup.sql"
+        - name: read dm
+          slurp:
+            src: "{{ code_dir }}/{{ project }}/vendor/mikejw/elib-base/dm.sql"
+          register: dm
+        - name: populate inserts.sql
+          template:
+            src: "{{ playbook_dir }}/env/inserts.j2"
+            dest: "{{ code_dir }}/{{ project }}/inserts.sql"
+        - name: populate db setup.sql
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
+        - name: admin module
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod admin"
+        - name: admin module
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod user"
+        - name: populate elib.yml
+          template:
+            src: "{{ playbook_dir }}/env/elib.j2"
+            dest: "{{ code_dir }}/{{ project }}/elib.yml"
+        - name: enable elib
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --set_elib"
+        - name: restart app
+          command: docker restart app
+      when: operation == "qs" and template == "elib-base"
+
+

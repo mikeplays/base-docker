@@ -1,0 +1,8 @@
+
+DROP DATABASE IF EXISTS project;
+CREATE DATABASE project;
+USE project;
+
+DROP TABLE IF EXISTS    user, contact, shippingaddr;
+
+{{ dd.content | b64decode }}
