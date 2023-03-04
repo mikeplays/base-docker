@@ -1,0 +1,16 @@
+
+# (for data definition and data modification)
+
+- name: detect file
+  stat:
+    path: "{{ code_dir }}/{{ project }}/vendor/{{ item }}/{{ input_file }}"
+  register: st
+- name: read file
+  slurp:
+    src: "{{ code_dir }}/{{ project }}/vendor/{{ item }}/{{ input_file }}"
+  register: data
+  when: st.stat.exists
+- name:
+  ansible.builtin.set_fact:
+    data_found: "{{ data_found + [ data['content'] | b64decode ] }}"
+  when: st.stat.exists

@@ -24,7 +24,6 @@
             virtualenv: "{{ playbook_dir }}/python"
             name:
               - docker-compose
-              - psutil
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
@@ -79,9 +78,6 @@
           stat:
             path: "{{ code_dir }}/{{ project }}/react"
           register: st
-        - name: output stat
-          debug:
-            var: st
         - name: kill any pre-existing webpack dev server
           shell: "(killall node 2>/dev/null)"
           ignore_errors: yes
@@ -113,7 +109,7 @@
             state: directory
         - name: populate composer config
           template:
-            src: "{{ playbook_dir }}/env/composer.j2"
+            src: "{{ playbook_dir }}/env/templates/vanilla/composer.j2"
             dest: "{{ code_dir }}/{{ project }}/composer.json"
         - name: download composer
           ansible.builtin.get_url:
@@ -125,6 +121,7 @@
             name:
               - docker-compose
               - pexpect
+              - sqlfluff
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
@@ -157,36 +154,89 @@
       when: operation == "qs"
     - name: qs elib-base template
       block:
-        - name: read dd
-          slurp:
-            src: "{{ code_dir }}/{{ project }}/vendor/mikejw/elib-base/dd.sql"
-          register: dd
-        - name: populate setup
+        - name: populate elib.yml
           template:
-            src: "{{ playbook_dir }}/env/setup.j2"
+            src: "{{ playbook_dir }}/env/templates/elib-base/elib.j2"
+            dest: "{{ code_dir }}/{{ project }}/elib.yml"
+        - name: enable elib
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --set_elib"
+        - name: get installed elibs
+          command: docker exec -i -u www-data app php ./vendor/bin/empathy --get_elibs
+          register: installed_elibs
+        - name: set installed libs list
+          ansible.builtin.set_fact:
+            installed_elibs_list: "{{ installed_elibs.stdout | from_json }}"
+        - name: 'set file name'
+          ansible.builtin.set_fact:
+            input_file: 'dd.sql'
+        - name: initialise data array
+          ansible.builtin.set_fact:
+            data_found: [ ]
+        - name: read dd
+          include_tasks: "{{ playbook_dir }}/read_files.yml"
+          loop: "{{ installed_elibs_list }}"
+        - name: get dd tables
+          command: docker exec -i -u www-data app php ./vendor/bin/empathy --get_elib_tables
+          register: tables
+        - name: set table list
+          ansible.builtin.set_fact:
+            table_list: "{{ tables.stdout | from_json }}"
+        - name: populate setup.sql
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-base/setup.j2"
             dest: "{{ code_dir }}/{{ project }}/setup.sql"
+        - name: 'set file name'
+          ansible.builtin.set_fact:
+            input_file: 'inserts.sql'
+        - name: lint
+          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+        - name: 'set file name'
+          ansible.builtin.set_fact:
+            input_file: 'dm.sql'
+        - name: initialise data array
+          ansible.builtin.set_fact:
+            data_found: [ ]
         - name: read dm
-          slurp:
-            src: "{{ code_dir }}/{{ project }}/vendor/mikejw/elib-base/dm.sql"
-          register: dm
+          include_tasks: "{{ playbook_dir }}/read_files.yml"
+          loop: "{{ installed_elibs_list }}"
         - name: populate inserts.sql
           template:
-            src: "{{ playbook_dir }}/env/inserts.j2"
+            src: "{{ playbook_dir }}/env/templates/elib-base/inserts.j2"
             dest: "{{ code_dir }}/{{ project }}/inserts.sql"
+        - name: 'set file name'
+          ansible.builtin.set_fact:
+            input_file: 'inserts.sql'
+        - name: lint
+          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
         - name: populate db setup.sql
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
         - name: admin module
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod admin"
         - name: admin module
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod user"
-        - name: populate elib.yml
+        - name: clear cache
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --clear_cache"
+      when: operation == "qs" and template != "vanilla"
+    - name: qs elib-acl template
+      block:
+        # overwrite dm.sql
+        - name: read dm.sql
+          slurp:
+            src: "{{ code_dir }}/{{ project }}/vendor/mikejw/elib-acl/dm.sql"
+          register: data
+        - name: initialise data array
+          ansible.builtin.set_fact:
+            data_found: "{{ [ data['content'] | b64decode ] }}"
+        - name: populate inserts.sql
           template:
-            src: "{{ playbook_dir }}/env/elib.j2"
-            dest: "{{ code_dir }}/{{ project }}/elib.yml"
-        - name: enable elib
-          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --set_elib"
-        - name: restart app
-          command: docker restart app
-      when: operation == "qs" and template == "elib-base"
+            src: "{{ playbook_dir }}/env/templates/elib-base/inserts.j2"
+            dest: "{{ code_dir }}/{{ project }}/inserts.sql"
+        - name: 'set file name'
+          ansible.builtin.set_fact:
+            input_file: 'inserts.sql'
+        - name: lint
+          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+      when: operation == "qs" and template == "elib-acl"
+
 
 

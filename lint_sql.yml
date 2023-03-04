@@ -1,0 +1,8 @@
+
+- name: lint sql
+  expect:
+    chdir: "{{ code_dir }}/{{ project }}"
+    command: "{{ playbook_dir }}/python/bin/sqlfluff fix ./{{ input_file }} --dialect mysql"
+    responses:
+      'Are you sure you wish to attempt to fix these': "\n"
+  ignore_errors: true
