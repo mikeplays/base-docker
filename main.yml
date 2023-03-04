@@ -165,7 +165,7 @@
           register: installed_elibs
         - name: set installed libs list
           ansible.builtin.set_fact:
-            installed_elibs_list: "{{ installed_elibs.stdout | from_json }}"
+            installed_elibs_list: "{{ installed_elibs.stdout | from_json | reverse }}"
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'dd.sql'
