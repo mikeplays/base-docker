@@ -236,6 +236,26 @@
             input_file: 'inserts.sql'
         - name: lint
           include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+        # setup plugins
+        - name: set json view plugin config config
+          ansible.builtin.set_fact:
+            json:
+              api: { 'pretty_print' : true }
+        - name: set json view plugin config
+          ansible.builtin.set_fact:
+            json:
+              name: JSONView
+              version: 1.0
+              config: "{{ json | to_json }}"
+        - name: assert json view plugin
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
+        - name: set acl plugin config
+          ansible.builtin.set_fact:
+            json:
+              name: Empathy\ELib\MVC\Plugin\Acl
+              version: 1.0
+        - name: assert acl plugin
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
       when: operation == "qs" and template == "elib-acl"
 
 
