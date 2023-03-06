@@ -240,7 +240,7 @@
         - name: set json view plugin config config
           ansible.builtin.set_fact:
             json:
-              api: { 'pretty_print' : true }
+              api: { 'pretty_print': true }
         - name: set json view plugin config
           ansible.builtin.set_fact:
             json:
@@ -256,6 +256,39 @@
               version: 1.0
         - name: assert acl plugin
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
+        # modify elib
+        - name: open elib config
+          slurp:
+            path: "{{ code_dir }}/{{ project }}/elib.yml"
+          register: r_elibconfig
+        - name: read yaml
+          set_fact:
+            elibconfigdata: "{{ r_elibconfig['content'] | b64decode | from_yaml }}"
+        - name: patch yaml
+          set_fact:
+            elibconfigdata: "{{ elibconfigdata | combine(newdata, recursive=True) }}"
+          vars: 
+            newdata:
+              jwt_secret: my_super_secret_key
+        - name: write yaml
+          copy:
+            content: '{{ elibconfigdata | to_nice_yaml }}'
+            dest: "{{ code_dir }}/{{ project }}/elib.yml"
+        # templates    
+        - name: populate services.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-acl/services.j2"
+            dest: "{{ code_dir }}/{{ project }}/services.php" 
+        - name: populate admin.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-acl/admin.j2"
+            dest: "{{ code_dir }}/{{ project }}/application/admin/admin.php"
+        - name: generate api module
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod api"
+        - name: clear cache 
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --clear_cache"
+        - name: populate db
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"  
       when: operation == "qs" and template == "elib-acl"
 
 
