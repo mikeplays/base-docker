@@ -1,0 +1,17 @@
+<?php
+
+namespace Empathy\MVC\Controller;
+use Laminas\Permissions\Acl\Resource\ResourceInterface;
+
+class admin extends \Empathy\ELib\AdminController implements ResourceInterface
+{
+    public function __construct($boot)
+    {
+        parent::__construct($boot, false);
+    }
+
+    public function getResourceId()
+    {
+        return 'admin-area';
+    }
+}

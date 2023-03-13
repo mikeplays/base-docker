@@ -56,6 +56,19 @@ In the above example the project found in `~/code/a.ce` will be set as active.
     ansible-playbook main.yml -e "op=boot"
 
 
+##### Quick start commands
+
+Boostrap Empathy projects giving target extension name. Template default is "vanilla" for
+base empathy app with no extensions.  
+
+Others available are "elib-base", "elib-acl".
+
+Will fail if codebase path already exists.
+
+
+    ansible-playbook main.yml -e "op=qs cb=myproject tpl=elib-base"
+
+
 ##### Frontend
 
 
