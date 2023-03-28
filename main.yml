@@ -208,7 +208,7 @@
             input_file: 'inserts.sql'
         - name: lint
           include_tasks: "{{ playbook_dir }}/lint_sql.yml"
-        - name: populate db setup.sql
+        - name: populate db setup
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
         - name: admin module
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod admin"
