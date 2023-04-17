@@ -1,0 +1,13 @@
+---
+- name: install virtualenv
+  ansible.builtin.apt:
+    name: virtualenv
+    state: present
+- name: clear folder
+  ansible.builtin.file:
+    path: ~/python
+    state: absent
+- name: setup virtualenv
+  shell:
+    cmd: virtualenv ~/python
+...
