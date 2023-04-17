@@ -1,0 +1,45 @@
+---
+#- hosts: control
+#  vars:
+#    ansible_python_interpreter: /usr/bin/python3
+#  gather_facts: no
+#  tasks:
+#    - name: virtualenv
+#      include_tasks: "{{ playbook_dir }}/vagrant_virtualenv.yml"
+
+- hosts: node
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_become: true
+  gather_facts: yes
+  roles:
+    - geerlingguy.docker
+  tasks:
+    - name: adding existing user '{{ user }}' to group sudo
+      user:
+        name: vagrant
+        groups: docker
+        append: yes
+    - name: project(s) dir
+      file:
+        path: /home/vagrant/code
+        state: directory
+        owner: vagrant
+        group: vagrant
+    - name: working dir
+      file:
+        path: /home/vagrant/files
+        state: directory
+        owner: vagrant
+        group: vagrant
+
+- hosts: node
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  gather_facts: false
+  tasks:
+    - name: virtualenv
+      include_tasks: "{{ playbook_dir }}/vagrant_virtualenv.yml"
+
+
+...

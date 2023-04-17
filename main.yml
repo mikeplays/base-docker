@@ -2,7 +2,7 @@
 # "cb" = shortened for codebase
 # "qs" = shortened for quick starts
 ---
-- hosts: control
+- hosts: "{{ variable_host | default('control') }}"
   vars:
     project_ini_string: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
     saved_project: "{{ lookup('ini', project_ini_string) }}"
@@ -21,7 +21,7 @@
       block:
         - name: install python docker
           pip:
-            virtualenv: "{{ playbook_dir }}/python"
+            virtualenv: "{{ virtualenv_dir }}"
             name:
               - docker-compose
         - name: populate docker-compose
@@ -117,7 +117,7 @@
             dest: "{{ code_dir }}/{{ project }}"
         - name: install python docker
           pip:
-            virtualenv: "{{ playbook_dir }}/python"
+            virtualenv: "{{ virtualenv_dir }}"
             name:
               - docker-compose
               - pexpect
@@ -144,7 +144,7 @@
               'Please enter name': "{{ project }}"
               'Please enter web root': "www.dev.org"
         - name: npm install
-          shell: docker exec -i -u www-data app npm install
+          shell: docker exec -i -u www-data app npm install --no-bin-links
         - name: grunt
           shell: docker exec -i -u www-data app make grunt
         - name: saving active project

@@ -1,7 +1,12 @@
 *~
+
+/.vagrant
 /.idea
 /db/log
 /docker-compose.yml
 /python
 /react.log
 /vendor
+/roles
+/code
+
