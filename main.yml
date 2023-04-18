@@ -4,7 +4,17 @@
 ---
 - hosts: "{{ variable_host | default('control') }}"
   vars:
-    project_ini_string: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
+  gather_facts: no
+  tasks:
+    - name: copy config file
+      fetch:
+        src: "{{ settings_dir }}/{{ settings_file }}"
+        dest: "/tmp/{{ settings_file }}"
+        flat: yes
+
+- hosts: "{{ variable_host | default('control') }}"
+  vars:
+    project_ini_string: "project section=Settings file=/tmp/{{ settings_file }}"
     saved_project: "{{ lookup('ini', project_ini_string) }}"
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
     project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
@@ -201,12 +211,12 @@
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'inserts.sql'
-        - name: lint
+        - name: lint inserts
           include_tasks: "{{ playbook_dir }}/lint_sql.yml"
         - name: 'set file name'
           ansible.builtin.set_fact:
-            input_file: 'inserts.sql'
-        - name: lint
+            input_file: 'setup.sql'
+        - name: lint setup
           include_tasks: "{{ playbook_dir }}/lint_sql.yml"
         - name: populate db setup
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"

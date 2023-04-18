@@ -1,11 +1,4 @@
 ---
-#- hosts: control
-#  vars:
-#    ansible_python_interpreter: /usr/bin/python3
-#  gather_facts: no
-#  tasks:
-#    - name: virtualenv
-#      include_tasks: "{{ playbook_dir }}/vagrant_virtualenv.yml"
 
 - hosts: node
   vars:
@@ -32,14 +25,21 @@
         state: directory
         owner: vagrant
         group: vagrant
+    - name: install virtualenv
+      ansible.builtin.apt:
+        name: virtualenv
+        state: present
 
 - hosts: node
   vars:
     ansible_python_interpreter: /usr/bin/python3
   gather_facts: false
   tasks:
-    - name: virtualenv
-      include_tasks: "{{ playbook_dir }}/vagrant_virtualenv.yml"
-
-
+    - name: clear folder
+      ansible.builtin.file:
+        path: ~/python
+        state: absent
+    - name: setup virtualenv
+      shell:
+        cmd: virtualenv ~/python
 ...
