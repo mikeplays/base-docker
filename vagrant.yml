@@ -29,6 +29,11 @@
       ansible.builtin.apt:
         name: virtualenv
         state: present
+    - name: ensure www.dev.org points to node
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.1.1\subuntu-jammy\subuntu-jammy'
+        line: "127.0.1.1\tubuntu-jammy\tubuntu-jammy\twww.dev.org"
 
 - hosts: node
   vars:
