@@ -188,7 +188,7 @@
           ansible.builtin.set_fact:
             input_file: 'inserts.sql'
         - name: lint inserts
-          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+          include_tasks: "{{ playbook_dir }}/main_lint_sql.yml"
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'setup.sql'

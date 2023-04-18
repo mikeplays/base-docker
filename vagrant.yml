@@ -61,5 +61,11 @@
   tasks:
     - name: virtualenv
       include_tasks: "{{ playbook_dir }}/vagrant_virtualenv.yml"
-
+    - name: clear folder
+      ansible.builtin.file:
+        path: ~/python
+        state: absent
+    - name: setup virtualenv
+      shell:
+        cmd: virtualenv ~/python
 ...
