@@ -58,9 +58,11 @@
           stat:
             path: "{{ code_dir }}/{{ project }}/vendor"
           register: st
-        - name: build
+        - name: install
+          include_tasks: "{{ playbook_dir }}/main_install.yml"
+          when: st.stat.exists == false
+        - name: configure
           shell: |
-            docker exec -u www-data app ant
             docker exec -u www-data app php ./vendor/bin/empathy --set_docroot /var/www/project
             docker exec -u www-data app php ./vendor/bin/empathy --set_webroot www.dev.org
             docker exec -u www-data app php ./vendor/bin/empathy --set_publicdir ""
@@ -84,17 +86,6 @@
         - name: populate db (setup)
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
           when: stsetup.stat.exists and not stdump.stat.exists
-        - name: detect react dir
-          stat:
-            path: "{{ code_dir }}/{{ project }}/react"
-          register: st
-        - name: kill any pre-existing webpack dev server
-          shell: "(killall node 2>/dev/null)"
-          ignore_errors: yes
-          when: st.stat.exists == true
-        - name: run webpack
-          shell: "(cd {{ code_dir }}/{{ project }}/react; npm run dev >> {{ playbook_dir }}/react.log 2>&1 &)"
-          when: st.stat.exists == true
       when: operation == "boot"
     - name: switch
       block:
@@ -121,10 +112,6 @@
           template:
             src: "{{ playbook_dir }}/env/templates/vanilla/composer.j2"
             dest: "{{ code_dir }}/{{ project }}/composer.json"
-        - name: download composer
-          ansible.builtin.get_url:
-            url: https://getcomposer.org/composer.phar
-            dest: "{{ code_dir }}/{{ project }}"
         - name: install python docker
           pip:
             virtualenv: "{{ virtualenv_dir }}"
@@ -144,19 +131,8 @@
           docker_compose:
             project_src: "{{ playbook_dir }}"
             state: present
-        - name: composer install
-          shell: docker exec -i -u www-data app php ./composer.phar install
-        - name: set up app
-          expect:
-            command: docker exec -i -u www-data app php ./vendor/bin/empathy --new_app
-            responses:
-              'Please enter document root': "/var/www/project"
-              'Please enter name': "{{ project }}"
-              'Please enter web root': "www.dev.org"
-        - name: npm install
-          shell: docker exec -i -u www-data app npm install --no-bin-links
-        - name: grunt
-          shell: docker exec -i -u www-data app make grunt
+        - name: install
+          include_tasks: "{{ playbook_dir }}/main_install.yml"
         - name: saving active project
           template:
             src: "{{ playbook_dir }}/env/base-docker.j2"
@@ -183,7 +159,7 @@
           ansible.builtin.set_fact:
             data_found: [ ]
         - name: read dd
-          include_tasks: "{{ playbook_dir }}/read_files.yml"
+          include_tasks: "{{ playbook_dir }}/main_read_files.yml"
           loop: "{{ installed_elibs_list }}"
         - name: get dd tables
           command: docker exec -i -u www-data app php ./vendor/bin/empathy --get_elib_tables
@@ -202,7 +178,7 @@
           ansible.builtin.set_fact:
             data_found: [ ]
         - name: read dm
-          include_tasks: "{{ playbook_dir }}/read_files.yml"
+          include_tasks: "{{ playbook_dir }}/main_read_files.yml"
           loop: "{{ installed_elibs_list }}"
         - name: populate inserts.sql
           template:
@@ -217,7 +193,7 @@
           ansible.builtin.set_fact:
             input_file: 'setup.sql'
         - name: lint setup
-          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+          include_tasks: "{{ playbook_dir }}/main_lint_sql.yml"
         - name: populate db setup
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
         - name: admin module
@@ -245,7 +221,7 @@
           ansible.builtin.set_fact:
             input_file: 'inserts.sql'
         - name: lint
-          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+          include_tasks: "{{ playbook_dir }}/main_lint_sql.yml"
         # setup plugins
         - name: set json view plugin config config
           ansible.builtin.set_fact:

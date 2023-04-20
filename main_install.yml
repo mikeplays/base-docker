@@ -1,0 +1,15 @@
+
+- name: composer install
+  shell: docker exec -i -u www-data app php ./composer.phar install
+- name: set up app
+  expect:
+    command: docker exec -i -u www-data app php ./vendor/bin/empathy --new_app
+    responses:
+      'Please enter document root': "/var/www/project"
+      'Please enter name': "{{ project }}"
+      'Please enter web root': "www.dev.org"
+    when: operation == "qs"
+- name: npm install
+  shell: docker exec -i -u www-data app npm install --no-bin-links
+- name: grunt
+  shell: docker exec -i -u www-data app make grunt

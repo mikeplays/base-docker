@@ -1,4 +1,14 @@
 ---
+- hosts: control
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_become: true
+  gather_facts: false
+  tasks:
+    - name: set hostname
+      ansible.builtin.hostname:
+        name: control
+        use: systemd
 
 - hosts: node
   vars:
@@ -8,6 +18,10 @@
   roles:
     - geerlingguy.docker
   tasks:
+    - name: set hostname
+      ansible.builtin.hostname:
+        name: node
+        use: systemd
     - name: adding existing user '{{ user }}' to group sudo
       user:
         name: vagrant
