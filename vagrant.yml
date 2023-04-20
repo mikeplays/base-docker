@@ -1,4 +1,14 @@
 ---
+- hosts: control
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_become: true
+  gather_facts: false
+  tasks:
+    - name: set hostname
+      ansible.builtin.hostname:
+        name: control
+        use: systemd
 
 - hosts: control
   vars:

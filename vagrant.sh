@@ -17,7 +17,7 @@ else
     "${myVars[@]}"
     "op=qs"
     "cb=myproject"
-    "tpl=elib-acl"
+    "tpl=vanilla"
   )
 fi
 

@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 - name: detect composer
   stat:
     path: "{{ code_dir }}/{{ project }}/composer.phar"
@@ -8,6 +9,8 @@
     url: https://getcomposer.org/composer.phar
     dest: "{{ code_dir }}/{{ project }}"
   when: not st.stat.exists
+=======
+>>>>>>> 46afbba (set vm hostnames and main playbook simplifications)
 - name: composer install
   shell: docker exec -i -u www-data app php ./composer.phar install
 - name: set up app
@@ -17,6 +20,7 @@
       'Please enter document root': "/var/www/project"
       'Please enter name': "{{ project }}"
       'Please enter web root': "www.dev.org"
+<<<<<<< HEAD
   when: operation == "qs"
 - name: clear node_modules
   file:
@@ -26,3 +30,10 @@
   shell: docker exec -i -u www-data app npm install --no-bin-links
 - name: grunt
   shell: docker exec -i -u www-data app make grunt
+=======
+    when: operation == "qs"
+- name: npm install
+  shell: docker exec -i -u www-data app npm install --no-bin-links
+- name: grunt
+  shell: docker exec -i -u www-data app make grunt
+>>>>>>> 46afbba (set vm hostnames and main playbook simplifications)
