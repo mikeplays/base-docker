@@ -1,0 +1,35 @@
+
+
+Ansible
+===
+
+Empathy slack
+---
+Python 2.7 windows
+* https://stackoverflow.com/questions/32597209/python-not-working-in-the-command-line-of-git-bash
+* https://stackoverflow.com/questions/68113634/winpty-python-exe-whenever-you-enter-python
+
+Windows tmux
+---
+* https://gist.github.com/DeanPDX/acff533cff0cfbda2761d1e62e8cb1a7
+
+
+
+Managing hosts (control/node in main.yml)
+---
+
+"Keep hosts paterns static, but provide additional inventory configs with  -i   that generate  hosts in the desired groups"
+
+"ansible-doc -t inventory constructed  # is handy if you want to  group hosts based on whatever expression"
+
+
+ansible output in json
+---
+"see stdout_callback"
+
+"https://devops.stackexchange.com/questions/12213/how-do-i-make-ansible-playbook-log-its-output-in-a-machine-readable-format-like"
+
+"https://docs.ansible.com/ansible/latest/plugins/callback.html#plugin-list"
+
+"and i vote for 'ara' if you go some step further w/ automatic (machine readable) output collecting"
+
