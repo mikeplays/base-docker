@@ -90,6 +90,10 @@ Restart the app container after making changes to these files.
     docker stop app
     docker start app
 
+Ansible my have trouble connecting to Docker Desktop on mac when running docker tasks.  If 
+this happens run this command:
+
+    sudo ln -s "$HOME/.docker/run/docker.sock" /var/run/docker.sock
 
 
 Misc.

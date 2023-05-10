@@ -1,0 +1,20 @@
+{
+  "name": "mikejw/base-docker",
+  "type": "library",
+  "description": "Dev environment project for Empathy PHP.",
+  "keywords": [
+    "lib"
+  ],
+  "homepage": "http://empathyphp.co.uk",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mike Whiting",
+      "email": "mikejw3@gmail.com"
+    }
+  ],
+  "require": {
+    "mikejw/empathy": "dev-master"
+  },
+  "minimum-stability": "dev"
+}
