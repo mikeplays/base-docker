@@ -6,6 +6,8 @@ use Laminas\Permissions\Acl\Resource\GenericResource as Resource;
 use Empathy\ELib\User\AclUser;
 
 return [
+    'ApcuDebug' => false,
+    'LoggingOn' => false,
     'Acl' => function(\DI\Container $c) {
         $acl = new Acl();
 
@@ -36,5 +38,5 @@ return [
     'UserModel' => 'MobileUserItem',
     'CurrentUser' => function (\DI\Container $c) {
         return new AclUser();
-    },
+    }
 ];

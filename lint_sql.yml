@@ -5,4 +5,5 @@
     command: "{{ playbook_dir }}/python/bin/sqlfluff fix ./{{ input_file }} --dialect mysql"
     responses:
       'Are you sure you wish to attempt to fix these': "\n"
+  become: false
   ignore_errors: true
