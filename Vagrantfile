@@ -3,7 +3,7 @@
 Vagrant.configure("2") do |config|
     config.vm.define "node" do |node|
         node.vm.network "private_network", ip: "192.168.56.211", auto_config: true
-        node.vm.box = "ubuntu/jammy64"
+        node.vm.box = "ubuntu/lunar64"
 
         node.vm.provision "file", source: "~/.ssh/id_rsa.pub", destination: "~/.ssh/me.pub"
         node.vm.provision "shell", inline: "cat ~vagrant/.ssh/me.pub >> ~vagrant/.ssh/authorized_keys"
@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
 
         node.vm.provider "virtualbox" do |v|
             v.name = "node"
-            v.memory = 2000
+            v.memory = 4096
             v.cpus = 2
         end
     end
@@ -31,7 +31,7 @@ Vagrant.configure("2") do |config|
         control.vm.provision "shell", inline: "chmod 600 /home/vagrant/.ssh/id_rsa"
         control.vm.provision "file", source: "~/.ssh/known_hosts", destination: "~/.ssh/known_hosts"
 
-        control.vm.box = "ubuntu/jammy64"
+        control.vm.box = "ubuntu/lunar64"
         control.vm.network "private_network", ip: "192.168.56.212", auto_config: true
 
         control.vm.synced_folder ".", "/home/vagrant/files", create: true, group: "vagrant", owner: "vagrant", type: "virtualbox", mount_options: ["dmode=755","fmode=755"]
@@ -54,7 +54,7 @@ Vagrant.configure("2") do |config|
 
         control.vm.provider "virtualbox" do |v|
             v.name = "control"
-            v.memory = 1024
+            v.memory = 2048
             v.cpus = 2
         end
     end

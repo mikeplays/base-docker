@@ -1,14 +1,4 @@
 ---
-- hosts: control
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-    ansible_become: true
-  gather_facts: false
-  tasks:
-    - name: set hostname
-      ansible.builtin.hostname:
-        name: control
-        use: systemd
 
 - hosts: control
   vars:
@@ -32,6 +22,8 @@
   roles:
     - geerlingguy.docker
   tasks:
+    - name: virtualenv
+      include_tasks: "{{ playbook_dir }}/vagrant_virtualenv.yml"
     - name: set hostname
       ansible.builtin.hostname:
         name: node
@@ -63,18 +55,5 @@
         regexp: '^127.0.1.1\subuntu-lunar\subuntu-lunar'
         line: "127.0.1.1\tubuntu-lunar\tubuntu-lunar\twww.dev.org"
 
-- hosts: node
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  gather_facts: false
-  tasks:
-    - name: virtualenv
-      include_tasks: "{{ playbook_dir }}/vagrant_virtualenv.yml"
-    - name: clear folder
-      ansible.builtin.file:
-        path: ~/python
-        state: absent
-    - name: setup virtualenv
-      shell:
-        cmd: virtualenv ~/python
+
 ...

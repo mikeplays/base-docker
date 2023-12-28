@@ -1,9 +1,6 @@
 
 - name: lint sql
-  expect:
+  shell:
     chdir: "{{ code_dir }}/{{ project }}"
-    command: "{{ virtualenv_dir }}/bin/sqlfluff fix ./{{ input_file }} --dialect mysql"
-    responses:
-      'Are you sure you wish to attempt to fix these': "\n"
+    cmd: "{{ virtualenv_dir }}/bin/sqlfluff fix ./{{ input_file }} --dialect mysql -f -q"
   become: false
-  ignore_errors: true

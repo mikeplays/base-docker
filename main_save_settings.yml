@@ -1,0 +1,9 @@
+
+- name: populate settings file
+  template:
+    src: "{{ playbook_dir }}/env/base-docker.j2"
+    dest: "/tmp/{{ settings_file }}"
+- name: retrieve file
+  fetch:
+    src:  "/tmp/{{ settings_file }}"
+    dest: "{{ settings_dir }}"

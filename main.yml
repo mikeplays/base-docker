@@ -2,19 +2,10 @@
 # "cb" = shortened for codebase
 # "qs" = shortened for quick starts
 ---
-- hosts: "{{ variable_host | default('control') }}"
-  vars:
-  gather_facts: no
-  tasks:
-    - name: copy config file
-      fetch:
-        src: "{{ settings_dir }}/{{ settings_file }}"
-        dest: "/tmp/{{ settings_file }}"
-        flat: yes
 
 - hosts: "{{ variable_host | default('control') }}"
   vars:
-    project_ini_string: "project section=Settings file=/tmp/{{ settings_file }}"
+    project_ini_string: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
     saved_project: "{{ lookup('ini', project_ini_string) }}"
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
     project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
@@ -29,11 +20,18 @@
       when: operation == "none"
     - name: boot
       block:
+        - name: install python docker deps
+          pip:
+            virtualenv: "{{ virtualenv_dir }}"
+            name:
+              - cython<3.0.0
+              - docker==6.1.3
         - name: install python docker
           pip:
             virtualenv: "{{ virtualenv_dir }}"
             name:
               - docker-compose
+            extra_args: --no-build-isolation
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
@@ -89,10 +87,8 @@
       when: operation == "boot"
     - name: switch
       block:
-        - name: populate settings file
-          template:
-            src: "{{ playbook_dir }}/env/base-docker.j2"
-            dest: "{{ settings_dir }}/{{ settings_file }}"
+        - name: save settings
+          include_tasks: "{{ playbook_dir }}/main_save_settings.yml"
       when: operation == "switch"
     - name: qs
       block:
@@ -112,6 +108,12 @@
           template:
             src: "{{ playbook_dir }}/env/templates/vanilla/composer.j2"
             dest: "{{ code_dir }}/{{ project }}/composer.json"
+        - name: install python docker deps
+          pip:
+            virtualenv: "{{ virtualenv_dir }}"
+            name:
+              - cython<3.0.0
+              - docker==6.1.3
         - name: install python docker
           pip:
             virtualenv: "{{ virtualenv_dir }}"
@@ -119,6 +121,7 @@
               - docker-compose
               - pexpect
               - sqlfluff
+            extra_args: --no-build-isolation
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
@@ -133,10 +136,8 @@
             state: present
         - name: install
           include_tasks: "{{ playbook_dir }}/main_install.yml"
-        - name: saving active project
-          template:
-            src: "{{ playbook_dir }}/env/base-docker.j2"
-            dest: "{{ settings_dir }}/{{ settings_file }}"
+        - name: save settings
+          include_tasks: "{{ playbook_dir }}/main_save_settings.yml"
       when: operation == "qs"
     - name: qs elib-base template
       block:
@@ -239,7 +240,15 @@
           ansible.builtin.set_fact:
             json:
               name: Empathy\ELib\MVC\Plugin\Acl
-              version: 1.0
+              version: "1.0"
+        - name: assert acl plugin
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
+        - name: set json view plugin config
+          ansible.builtin.set_fact:
+            json:
+              name: JSONView
+              version: "1.0"
+              config: '[{ "api": {} }, { "api2": {} }, { "api3": {} }]'
         - name: assert acl plugin
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
         # modify elib
@@ -267,14 +276,30 @@
             dest: "{{ code_dir }}/{{ project }}/services.php" 
         - name: populate admin.php
           template:
-            src: "{{ playbook_dir }}/env/templates/elib-acl/admin.j2"
+            src: "{{ playbook_dir }}/env/templates/elib-acl/application/admin.j2"
             dest: "{{ code_dir }}/{{ project }}/application/admin/admin.php"
         - name: generate api module
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod api"
         - name: clear cache 
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --clear_cache"
         - name: populate db
-          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"  
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
+        - name: create module dir api2
+          file:
+            path: "{{ code_dir }}/{{ project }}/application/api2"
+            state: directory
+        - name: create module dir api3
+          file:
+            path: "{{ code_dir }}/{{ project }}/application/api3"
+            state: directory
+        - name: populate api2.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-acl/application/api2.j2"
+            dest: "{{ code_dir }}/{{ project }}/application/api2/api2.php"
+        - name: populate api3.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-acl/application/api3.j2"
+            dest: "{{ code_dir }}/{{ project }}/application/api3/api3.php"
       when: operation == "qs" and template == "elib-acl"
 
 

@@ -1,0 +1,31 @@
+<?php
+
+namespace Empathy\MVC\Controller;
+
+use Empathy\MVC\Plugin\JSONView\ROb;
+use Laminas\Permissions\Acl\Resource\ResourceInterface;
+use Empathy\ELib\BaseApiController;
+use Empathy\ELib\MVC\Plugin\AclAnnotation;
+
+
+class api2 extends BaseApiController implements ResourceInterface
+{
+    /**
+     * @AclAnnotation(method="GET")
+     *
+     */
+    public function default_event()
+    {
+        $rob = new ROb;
+        $data = new \stdClass();
+        $data->foo = 'bar';
+        $rob->setData($data);
+        $this->assign('default', $rob, true);
+
+    }
+
+    public function getResourceId()
+    {
+        return 'free-api';
+    }
+}
