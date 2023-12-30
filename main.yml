@@ -119,7 +119,6 @@
             virtualenv: "{{ virtualenv_dir }}"
             name:
               - docker-compose
-              - pexpect
               - sqlfluff
             extra_args: --no-build-isolation
         - name: populate docker-compose
