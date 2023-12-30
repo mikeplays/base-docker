@@ -7,3 +7,5 @@
   fetch:
     src:  "/tmp/{{ settings_file }}"
     dest: "{{ settings_dir }}"
+    flat: true
+    validate_checksum: false
