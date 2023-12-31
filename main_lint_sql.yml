@@ -1,0 +1,6 @@
+
+- name: lint sql
+  shell:
+    chdir: "{{ code_dir }}/{{ project }}"
+    cmd: "{{ virtualenv_dir }}/bin/sqlfluff fix ./{{ input_file }} --dialect mysql -f -q"
+  become: false

@@ -1,5 +1,5 @@
 ---
-- hosts: control
+- hosts: "{{ variable_host | default('control') }}"
   gather_facts: no
   tasks:
     - name: create config directory

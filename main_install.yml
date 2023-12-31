@@ -1,0 +1,31 @@
+
+
+- name: detect composer
+  stat:
+    path: "{{ code_dir }}/{{ project }}/composer.phar"
+  register: st
+- name: download composer
+  ansible.builtin.get_url:
+    url: https://getcomposer.org/composer.phar
+    dest: "{{ code_dir }}/{{ project }}"
+  when: not st.stat.exists
+- name: composer install
+  shell: docker exec -i -u www-data app php ./composer.phar install -q
+- name: set up app
+  expect:
+    command: docker exec -i -u www-data app php ./vendor/bin/empathy --new_app
+    responses:
+      'Please enter document root': "/var/www/project"
+      'Please enter name': "{{ project }}"
+      'Please enter web root': "www.dev.org"
+    echo: true
+  when: operation == "qs"
+- name: clear node_modules
+  file:
+    path: "{{ code_dir }}/{{ project }}/node_modules"
+    state: absent
+- name: npm install
+  shell: docker exec -i -u www-data app npm install --no-bin-links
+- name: grunt
+  shell: docker exec -i -u www-data app make grunt
+  when: operation == "qs"

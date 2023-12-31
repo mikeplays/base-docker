@@ -2,7 +2,8 @@
 # "cb" = shortened for codebase
 # "qs" = shortened for quick starts
 ---
-- hosts: control
+
+- hosts: "{{ variable_host | default('control') }}"
   vars:
     project_ini_string: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
     saved_project: "{{ lookup('ini', project_ini_string) }}"
@@ -19,11 +20,18 @@
       when: operation == "none"
     - name: boot
       block:
+        - name: install python docker deps
+          pip:
+            virtualenv: "{{ virtualenv_dir }}"
+            name:
+              - cython<3.0.0
+              - docker==6.1.3
         - name: install python docker
           pip:
-            virtualenv: "{{ playbook_dir }}/python"
+            virtualenv: "{{ virtualenv_dir }}"
             name:
               - docker-compose
+            extra_args: --no-build-isolation
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
@@ -48,9 +56,11 @@
           stat:
             path: "{{ code_dir }}/{{ project }}/vendor"
           register: st
-        - name: build
+        - name: install
+          include_tasks: "{{ playbook_dir }}/main_install.yml"
+          when: st.stat.exists == false
+        - name: configure
           shell: |
-            docker exec -u www-data app ant
             docker exec -u www-data app php ./vendor/bin/empathy --set_docroot /var/www/project
             docker exec -u www-data app php ./vendor/bin/empathy --set_webroot www.dev.org
             docker exec -u www-data app php ./vendor/bin/empathy --set_publicdir ""
@@ -74,24 +84,11 @@
         - name: populate db (setup)
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
           when: stsetup.stat.exists and not stdump.stat.exists
-        - name: detect react dir
-          stat:
-            path: "{{ code_dir }}/{{ project }}/react"
-          register: st
-        - name: kill any pre-existing webpack dev server
-          shell: "(killall node 2>/dev/null)"
-          ignore_errors: yes
-          when: st.stat.exists == true
-        - name: run webpack
-          shell: "(cd {{ code_dir }}/{{ project }}/react; npm run dev >> {{ playbook_dir }}/react.log 2>&1 &)"
-          when: st.stat.exists == true
       when: operation == "boot"
     - name: switch
       block:
-        - name: populate settings file
-          template:
-            src: "{{ playbook_dir }}/env/base-docker.j2"
-            dest: "{{ settings_dir }}/{{ settings_file }}"
+        - name: save settings
+          include_tasks: "{{ playbook_dir }}/main_save_settings.yml"
       when: operation == "switch"
     - name: qs
       block:
@@ -111,17 +108,19 @@
           template:
             src: "{{ playbook_dir }}/env/templates/vanilla/composer.j2"
             dest: "{{ code_dir }}/{{ project }}/composer.json"
-        - name: download composer
-          ansible.builtin.get_url:
-            url: https://getcomposer.org/composer.phar
-            dest: "{{ code_dir }}/{{ project }}"
+        - name: install python docker deps
+          pip:
+            virtualenv: "{{ virtualenv_dir }}"
+            name:
+              - cython<3.0.0
+              - docker==6.1.3
         - name: install python docker
           pip:
-            virtualenv: "{{ playbook_dir }}/python"
+            virtualenv: "{{ virtualenv_dir }}"
             name:
               - docker-compose
-              - pexpect
               - sqlfluff
+            extra_args: --no-build-isolation
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
@@ -134,23 +133,10 @@
           docker_compose:
             project_src: "{{ playbook_dir }}"
             state: present
-        - name: composer install
-          shell: docker exec -i -u www-data app php ./composer.phar install
-        - name: set up app
-          expect:
-            command: docker exec -i -u www-data app php ./vendor/bin/empathy --new_app
-            responses:
-              'Please enter document root': "/var/www/project"
-              'Please enter name': "{{ project }}"
-              'Please enter web root': "www.dev.org"
-        - name: npm install
-          shell: docker exec -i -u www-data app npm install
-        - name: grunt
-          shell: docker exec -i -u www-data app make grunt
-        - name: saving active project
-          template:
-            src: "{{ playbook_dir }}/env/base-docker.j2"
-            dest: "{{ settings_dir }}/{{ settings_file }}"
+        - name: install
+          include_tasks: "{{ playbook_dir }}/main_install.yml"
+        - name: save settings
+          include_tasks: "{{ playbook_dir }}/main_save_settings.yml"
       when: operation == "qs"
     - name: qs elib-base template
       block:
@@ -173,7 +159,7 @@
           ansible.builtin.set_fact:
             data_found: [ ]
         - name: read dd
-          include_tasks: "{{ playbook_dir }}/read_files.yml"
+          include_tasks: "{{ playbook_dir }}/main_read_files.yml"
           loop: "{{ installed_elibs_list }}"
         - name: get dd tables
           command: docker exec -i -u www-data app php ./vendor/bin/empathy --get_elib_tables
@@ -192,7 +178,7 @@
           ansible.builtin.set_fact:
             data_found: [ ]
         - name: read dm
-          include_tasks: "{{ playbook_dir }}/read_files.yml"
+          include_tasks: "{{ playbook_dir }}/main_read_files.yml"
           loop: "{{ installed_elibs_list }}"
         - name: populate inserts.sql
           template:
@@ -201,13 +187,13 @@
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'inserts.sql'
-        - name: lint
-          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+        - name: lint inserts
+          include_tasks: "{{ playbook_dir }}/main_lint_sql.yml"
         - name: 'set file name'
           ansible.builtin.set_fact:
-            input_file: 'inserts.sql'
-        - name: lint
-          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+            input_file: 'setup.sql'
+        - name: lint setup
+          include_tasks: "{{ playbook_dir }}/main_lint_sql.yml"
         - name: populate db setup
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
         - name: admin module
@@ -235,7 +221,7 @@
           ansible.builtin.set_fact:
             input_file: 'inserts.sql'
         - name: lint
-          include_tasks: "{{ playbook_dir }}/lint_sql.yml"
+          include_tasks: "{{ playbook_dir }}/main_lint_sql.yml"
         # setup plugins
         - name: set json view plugin config config
           ansible.builtin.set_fact:
@@ -253,7 +239,15 @@
           ansible.builtin.set_fact:
             json:
               name: Empathy\ELib\MVC\Plugin\Acl
-              version: 1.0
+              version: "1.0"
+        - name: assert acl plugin
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
+        - name: set json view plugin config
+          ansible.builtin.set_fact:
+            json:
+              name: JSONView
+              version: "1.0"
+              config: '[{ "api": {} }, { "api2": {} }, { "api3": {} }]'
         - name: assert acl plugin
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
         # modify elib
@@ -281,14 +275,30 @@
             dest: "{{ code_dir }}/{{ project }}/services.php" 
         - name: populate admin.php
           template:
-            src: "{{ playbook_dir }}/env/templates/elib-acl/admin.j2"
+            src: "{{ playbook_dir }}/env/templates/elib-acl/application/admin.j2"
             dest: "{{ code_dir }}/{{ project }}/application/admin/admin.php"
         - name: generate api module
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod api"
         - name: clear cache 
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --clear_cache"
         - name: populate db
-          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"  
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
+        - name: create module dir api2
+          file:
+            path: "{{ code_dir }}/{{ project }}/application/api2"
+            state: directory
+        - name: create module dir api3
+          file:
+            path: "{{ code_dir }}/{{ project }}/application/api3"
+            state: directory
+        - name: populate api2.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-acl/application/api2.j2"
+            dest: "{{ code_dir }}/{{ project }}/application/api2/api2.php"
+        - name: populate api3.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-acl/application/api3.j2"
+            dest: "{{ code_dir }}/{{ project }}/application/api3/api3.php"
       when: operation == "qs" and template == "elib-acl"
 
 

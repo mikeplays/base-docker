@@ -1,0 +1,44 @@
+<?php
+
+namespace Empathy\MVC\Controller;
+use Empathy\MVC\Plugin\JSONView\ROb;
+use Laminas\Permissions\Acl\Resource\ResourceInterface;
+use Empathy\ELib\BaseApiController;
+use Empathy\ELib\MVC\Plugin\AclAnnotation;
+
+
+class api3 extends BaseApiController implements ResourceInterface
+{
+    /**
+     * @AclAnnotation(method="GET")
+     *
+     */
+    public function default_event()
+    {
+        $rob = new ROb();
+        $data = new \stdClass();
+        $data->foo = ['bar', 'baz'];
+        $rob->setData($data);
+        $this->assign('default', $rob, true);
+    }
+
+    /**
+     * @AclAnnotation(permissions={"view"})
+     * @AclAnnotation(method="GET")
+     *
+     */
+    public function view()
+    {
+        $rob = new ROb();
+        $data = new \stdClass();
+        $data->foo = ['buzz'];
+        $rob->setData($data);
+
+        $this->assign('default', $rob, true);
+    }
+
+    public function getResourceId()
+    {
+        return 'paid-api';
+    }
+}
