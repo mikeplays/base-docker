@@ -10,6 +10,7 @@
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
     project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
     template: "{{ (tpl is defined) | ternary(tpl, 'vanilla') }}"
+    qs_branch: "{{ (template == 'elib-blog') | ternary('bootstrap4', 'master') }}"
   gather_facts: no
   tasks:
     - name: default
@@ -52,6 +53,7 @@
           ansible.builtin.wait_for:
             port: 3306
             delay: 20
+            host: "www.dev.org"
         - name: detect build
           stat:
             path: "{{ code_dir }}/{{ project }}/vendor"
@@ -152,7 +154,7 @@
           register: installed_elibs
         - name: set installed libs list
           ansible.builtin.set_fact:
-            installed_elibs_list: "{{ installed_elibs.stdout | from_json | reverse }}"
+            installed_elibs_list: "{{ installed_elibs.stdout | from_json }}"
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'dd.sql'
@@ -224,18 +226,6 @@
         - name: lint
           include_tasks: "{{ playbook_dir }}/main_lint_sql.yml"
         # setup plugins
-        - name: set json view plugin config config
-          ansible.builtin.set_fact:
-            json:
-              api: { 'pretty_print': true }
-        - name: set json view plugin config
-          ansible.builtin.set_fact:
-            json:
-              name: JSONView
-              version: 1.0
-              config: "{{ json | to_json }}"
-        - name: assert json view plugin
-          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
         - name: set acl plugin config
           ansible.builtin.set_fact:
             json:
@@ -249,7 +239,7 @@
               name: JSONView
               version: "1.0"
               config: '[{ "api": {} }, { "api2": {} }, { "api3": {} }]'
-        - name: assert acl plugin
+        - name: assert json view plugin
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
         # modify elib
         - name: open elib config
@@ -301,6 +291,44 @@
             src: "{{ playbook_dir }}/env/templates/elib-acl/application/api3.j2"
             dest: "{{ code_dir }}/{{ project }}/application/api3/api3.php"
       when: operation == "qs" and template == "elib-acl"
-
+    - name: qs elib-blog template
+      block:
+        - name: debug branch
+          debug:
+            var: qs_branch
+        - name: generate front blog module
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod blog"
+        - name: generate front blog feed module
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod feed"
+        - name: populate db
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
+        # modify elib
+        - name: open elib config
+          slurp:
+            path: "{{ code_dir }}/{{ project }}/elib.yml"
+          register: r_elibconfig
+        - name: read yaml
+          set_fact:
+            elibconfigdata: "{{ r_elibconfig['content'] | b64decode | from_yaml }}"
+        - name: patch yaml
+          set_fact:
+            elibconfigdata: "{{ elibconfigdata | combine(newdata, recursive=True) }}"
+          vars:
+            newdata:
+              blog_entries: 12
+              blog_image_max_width: 960
+              blog_title: An Empathy Blog
+              blog_description: Some words from me
+              truncate_blog_items: true
+              fetch_blog_images: false
+              blog_image_max_height:
+              def_blog_category: 0
+              def_blog_per_page: 3
+              blog_social_links: '{ "X": "https://twitter.com/TimothyHillArt", "Instagram": "https://www.instagram.com/veilcraft333/", "VEIL": "https://linktr.ee/veilcraft" }'
+        - name: write yaml
+          copy:
+            content: '{{ elibconfigdata | to_nice_yaml }}'
+            dest: "{{ code_dir }}/{{ project }}/elib.yml"
+      when: operation == "qs" and template == "elib-blog"
 
 
