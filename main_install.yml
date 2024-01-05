@@ -10,7 +10,7 @@
     dest: "{{ code_dir }}/{{ project }}"
   when: not st.stat.exists
 - name: composer install
-  shell: docker exec -i -u www-data app php ./composer.phar install -q
+  shell: docker exec -i -u www-data app php ./composer.phar install -q --prefer-source
 - name: set up app
   expect:
     command: docker exec -i -u www-data app php ./vendor/bin/empathy --new_app
