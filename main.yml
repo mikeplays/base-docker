@@ -381,6 +381,12 @@
               state: directory
         - name: clear cache
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --clear_cache"
+        - name: copy dump file
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/dump.sql"
+            dest: "{{ code_dir }}/{{ project }}"
+        - name: populate db
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql populate"
       when: operation == "qs" and template == "elib-blog"
 
 
