@@ -9,10 +9,10 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="logo d-flex align-items-center">
-                    <a href="http://{$WEB_ROOT_DEFAULT}{$PUBLC_DIR}">
+                    <a href="http://{$WEB_ROOT}{$PUBLC_DIR}">
                         <img class="logo-img" src="http://{$WEB_ROOT}{$PUBLCI_DIR}/img/skull_clean_light.png" alt="Skull clean" />
                     </a>
-                    <h1><a href="http://{$WEB_ROOT_DEFAULT}{$PUBLC_DIR}">Online Vibes</a></h1>
+                    <h1><a href="http://{$WEB_DEFAULT}{$PUBLC_DIR}">Online Vibes</a></h1>
                 </div>
                 <p class="about">Online Vibes is a minimal online marketplace for up-and-coming creatives and personalities.</p>
             </div>
@@ -20,7 +20,7 @@
         <div class="separator-w"></div>
         <div class="d-flex align-items-center justify-content-between align-items-center">
             <div class="terms">
-                <span class="mr-4">Â© 2023 Ai-em Ltd.</span>
+                <span class="mr-4">Copyright © {$smarty.now|date_format:'%Y'} Ai-em Ltd.</span>
                 <span>
                         <a target="_blank" href="https://twitter.com/onlinevibes_" class="text-secondary">
                             Twitter&nbsp;&nbsp;<i class="fa-brands fa-twitter"></i>

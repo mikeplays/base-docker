@@ -3,7 +3,7 @@
     <div class="nav-outer">
         <div class="nav-container container-fluid container-md">
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <a class="navbar-brand" href="http://{$WEB_ROOT_DEFAULT}{$PUBLIC_DIR}">
+                <a class="navbar-brand" href="http://{$WEB_ROOT}{$PUBLIC_DIR}">
                     <img src="http://{$WEB_ROOT}{$PUBLIC_DIR}/img/small_skull.png" width="30" alt="Online Vibes">
                 </a>
                 <ul class="navbar-nav mr-auto d-md-none">
@@ -19,11 +19,11 @@
                             {/if}
                             <a class="dropdown-item {if $module eq 'about'} active{/if}" href="http://{$WEB_ROOT}{$PUBLIC_DIR}/about">About OV</a>
                             {if isset($user_id) and $user_id > 0}
-                            <a class="dropdown-item{if $module eq 'settings'} active{/if}" href="http://{$WEB_ROOT}{$PUBLIC_DIR}/settings">Settings</a>
+                                <a class="dropdown-item{if $module eq 'settings'} active{/if}" href="http://{$WEB_ROOT}{$PUBLIC_DIR}/settings">Settings</a>
                             {/if}
                             {if isset($user_is_vendor) and $user_is_vendor}
                                 <a class="dropdown-item{if $module eq 'storeadmin'} active{/if}" href="http://{$WEB_ROOT}{$PUBLIC_DIR}/storeadmin">Admin</a>
-                           {/if}
+                            {/if}
                         </div>
                     </li>
                 </ul>
@@ -60,9 +60,9 @@
                     {/if}
                     *}
                     {if isset($user_id) and $user_id > 0}
-                    <li class="nav-item ">
-                        <a class="nav-link" href="http://{$WEB_ROOT}{$PUBLIC_DIR}/user/logout">Sign Out</a>
-                    </li>
+                        <li class="nav-item ">
+                            <a class="nav-link" href="http://{$WEB_ROOT}{$PUBLIC_DIR}/user/logout">Sign Out</a>
+                        </li>
                     {else}
                         <li class="nav-item ">
                             <a class="nav-link" href="http://{$WEB_ROOT}{$PUBLIC_DIR}/user/login">Log In</a>
