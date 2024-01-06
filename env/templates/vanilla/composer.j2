@@ -1,6 +1,9 @@
 {
     "require": {
         "mikejw/{% if template == 'vanilla' %}empathy{% else %}{{ template}}{% endif %}": "dev-{{ qs_branch }}"
+{% if template == 'elib-blog' %}
+        ,"mikejw/elib-siteinfo": "dev-bootstrap4"
+{% endif %}
     },
     "minimum-stability": "dev"
 }

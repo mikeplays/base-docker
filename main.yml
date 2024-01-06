@@ -315,20 +315,68 @@
             elibconfigdata: "{{ elibconfigdata | combine(newdata, recursive=True) }}"
           vars:
             newdata:
-              blog_entries: 12
-              blog_image_max_width: 960
               blog_title: An Empathy Blog
               blog_description: Some words from me
               truncate_blog_items: true
               fetch_blog_images: false
-              blog_image_max_height:
               def_blog_category: 0
               def_blog_per_page: 3
-              blog_social_links: '{ "X": "https://twitter.com/TimothyHillArt", "Instagram": "https://www.instagram.com/veilcraft333/", "VEIL": "https://linktr.ee/veilcraft" }'
+              blog_social_links: '{ "X": "https://twitter.com/mikejw" }'
         - name: write yaml
           copy:
             content: '{{ elibconfigdata | to_nice_yaml }}'
             dest: "{{ code_dir }}/{{ project }}/elib.yml"
+        - name: copy application files
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/application/"
+            dest: "{{ code_dir }}/{{ project }}/application"
+        - name: copy tpl files
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/tpl/"
+            dest: "{{ code_dir }}/{{ project }}/presentation"
+        - name: copy htaccess files
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/public_html/htaccess"
+            dest: "{{ code_dir }}/{{ project }}/public_html/.htaccess"
+        - name: set redbean plugin
+          ansible.builtin.set_fact:
+            json:
+              name: Redbean
+              version: "1.0"
+        - name: assert redbean plugin
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
+        - name: set site info plugin
+          ansible.builtin.set_fact:
+            json:
+              name: Empathy\ELib\MVC\Plugin\SiteInfo
+              version: "1.0"
+        - name: assert site info plugin
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
+        - name: disable error handling
+          ansible.builtin.lineinfile:
+            path: "{{ code_dir }}/{{ project }}/config.yml"
+            regexp: 'handle_errors'
+            line: "  handle_errors: false"
+        - name: enable apcu debug
+          ansible.builtin.lineinfile:
+            path: "{{ code_dir }}/{{ project }}/services.php"
+            regexp: 'ApcuDebug'
+            line: "    'ApcuDebug' => true,"
+        - name: set default module
+          ansible.builtin.lineinfile:
+            path: "{{ code_dir }}/{{ project }}/config.yml"
+            regexp: 'default_module'
+            line: "  default_module: blog"
+        - name: populate services.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/services.j2"
+            dest: "{{ code_dir }}/{{ project }}/services.php"
+        - name: create uploads dir
+          file:
+              path: "{{ code_dir }}/{{ project }}/public_html/uploads"
+              state: directory
+        - name: clear cache
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --clear_cache"
       when: operation == "qs" and template == "elib-blog"
 
 
