@@ -12,7 +12,7 @@
                     <a href="http://{$WEB_ROOT}{$PUBLC_DIR}">
                         <img class="logo-img" src="http://{$WEB_ROOT}{$PUBLCI_DIR}/img/skull_clean_light.png" alt="Skull clean" />
                     </a>
-                    <h1><a href="http://{$WEB_DEFAULT}{$PUBLC_DIR}">Online Vibes</a></h1>
+                    <h1><a href="http://{$WEB_ROOT}{$PUBLC_DIR}">Online Vibes</a></h1>
                 </div>
                 <p class="about">Online Vibes is a minimal online marketplace for up-and-coming creatives and personalities.</p>
             </div>
