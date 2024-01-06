@@ -1,1 +1,0 @@
-<title>{if $custom_title neq ''}{$custom_title} - {$custom_title2}{else}Empathy version {$MVC_VERSION}{$site_info->title}{/if}</title>
