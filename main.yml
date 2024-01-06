@@ -338,6 +338,10 @@
           copy:
             src: "{{ playbook_dir }}/env/templates/elib-blog/public_html/htaccess"
             dest: "{{ code_dir }}/{{ project }}/public_html/.htaccess"
+        - name: copy public files
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/public_html/"
+            dest: "{{ code_dir }}/{{ project }}/public_html"
         - name: set redbean plugin
           ansible.builtin.set_fact:
             json:
