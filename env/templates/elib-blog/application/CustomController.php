@@ -24,11 +24,14 @@ class CustomController extends Controller
 
             $this->assign('def_date_format', 'M jS, Y \a\t g:ia');
 
-            $about = file_get_contents(Config::get('DOC_ROOT').'/presentation/statement.tpl');
-            $this->assign('about', $about);
-            $this->assign('rand', uniqid());
+            $cache = $this->stash->get('cache');
+            $this->assign('about', $cache->cachedCallback('about_text', array($this, 'loadAboutText')));
         }
+    }
 
+    public function loadAboutText()
+    {
+        return file_get_contents(Config::get('DOC_ROOT').'/presentation/statement.tpl');
     }
 
     private function blogCategory()
