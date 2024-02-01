@@ -10,7 +10,7 @@
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
     project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
     template: "{{ (tpl is defined) | ternary(tpl, 'vanilla') }}"
-    qs_branch: "{{ (template == 'elib-blog') | ternary('bootstrap4', 'master') }}"
+    qs_branch: "{{ (template == 'elib-blog') | ternary('feature/blog-revisions', 'master') }}"
   gather_facts: no
   tasks:
     - name: default
