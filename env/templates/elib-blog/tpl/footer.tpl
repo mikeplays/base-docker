@@ -41,7 +41,9 @@
         </div>
     </div>
 </div>
-<script id="dsq-count-scr" src="//onlinevibes.disqus.com/count.js" async></script>
+{if $disqusUsername neq ''}
+    <script id="dsq-count-scr" src="//{$disqusUsername}.disqus.com/count.js" async></script>
+{/if}
 <script src="http://{$WEB_ROOT}{$PUBLIC_DIR}/vendor/js/main.min.js"></script>
 <script src="http://{$WEB_ROOT}{$PUBLIC_DIR}/js/common.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.min.js"></script>
