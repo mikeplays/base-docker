@@ -85,5 +85,17 @@ $(document).ready(function () {
   if($('#archive').length > 0) {
     archive();
   }
+  
+  var re = new RegExp(window.location.hostname, "g");
+  if (!document.referrer.match(re)) {
+    $('.page-link.back').hide();
+  } else {
+    $('.page-link.back').bind('click', function(e) {
+      e.preventDefault();
+
+      window.history.back();
+      return false;
+    });
+  }
 
 });
