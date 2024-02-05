@@ -4,10 +4,14 @@ services:
   cache:
     container_name: cache
     image: memcached:1.6.10
+{% if use_arch != 'pi' %}
     platform: linux/x86_64
+{% endif %}
   app:
     container_name: app
+{% if use_arch != 'pi' %}
     platform: linux/x86_64
+{% endif %}
     image: registry.gitlab.com/mikejw/empathy/app-php-dev-wnode:latest
     environment:
       - VIRTUAL_HOST=www.dev.org
@@ -17,7 +21,9 @@ services:
       - /etc/localtime:/etc/localtime:ro
   db:
     container_name: db
+{% if use_arch != 'pi' %}
     platform: linux/x86_64
+{% endif %}
     image: mysql:latest
     volumes:
       - "./db/log:/var/log/mysql"

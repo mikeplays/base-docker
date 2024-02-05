@@ -5,12 +5,15 @@
 
 - hosts: "{{ variable_host | default('control') }}"
   vars:
-    project_ini_string: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
-    saved_project: "{{ lookup('ini', project_ini_string) }}"
+    project_ini: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
+    saved_project: "{{ lookup('ini', project_ini) }}"
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
     project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
     template: "{{ (tpl is defined) | ternary(tpl, 'vanilla') }}"
     qs_branch: "{{ (template == 'elib-blog') | ternary('feature/blog-revisions', 'master') }}"
+    arch_ini: "arch section=Settings file={{ settings_dir }}/{{ settings_file }}"
+    saved_arch: "{{ lookup('ini', arch_ini) }}"
+    use_arch: "{{ (saved_arch == 'pi') | ternary('pi', '') }}"
   gather_facts: no
   tasks:
     - name: default

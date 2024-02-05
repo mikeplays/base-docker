@@ -1,7 +1,10 @@
 ---
 - hosts: "{{ variable_host | default('control') }}"
   gather_facts: no
-  tasks:
+  vars:
+    arch_string: "{{ (arch is defined) | ternary(arch, '') }}"
+    use_arch: "{{ (arch_string == 'pi') | ternary('pi', '') }}"
+  tasks:        
     - name: create config directory
       file:
         path: "{{ settings_dir }}"
