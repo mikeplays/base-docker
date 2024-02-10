@@ -1,8 +1,8 @@
--- MySQL dump 10.19  Distrib 10.3.36-MariaDB, for debian-linux-gnu (x86_64)
+-- MariaDB dump 10.19  Distrib 10.5.21-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: db    Database: project
 -- ------------------------------------------------------
--- Server version	5.7.42
+-- Server version	8.3.0
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -39,7 +39,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `blog_category` WRITE;
 /*!40000 ALTER TABLE `blog_category` DISABLE KEYS */;
-INSERT INTO `blog_category` (`id`, `blog_category_id`, `label`) VALUES (1,NULL,'Music'),(2,NULL,'Photography'),(3,NULL,'BMX'),(4,NULL,'Other'),(5,NULL,'Experiments'),(6,NULL,'Mike');
+INSERT INTO `blog_category` (`id`, `blog_category_id`, `label`, `meta`) VALUES (1,NULL,'Music','{ \"fa\": \"music\"}'),(2,NULL,'Photography','{ \"fa\": \"camera\"}'),(3,NULL,'BMX','{ \"fa\": \"bicycle\"}'),(4,NULL,'Other','{ \"fa\": \"plug\"}'),(5,NULL,'Experiments','{ \"fa\": \"flask\"}'),(6,NULL,'Releases','{ \"fa\": \"gift\"}');
 /*!40000 ALTER TABLE `blog_category` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -70,6 +70,15 @@ LOCK TABLES `blog_item_category` WRITE;
 /*!40000 ALTER TABLE `blog_item_category` DISABLE KEYS */;
 INSERT INTO `blog_item_category` (`blog_id`, `blog_category_id`) VALUES (1,2),(5,2),(6,2),(7,2),(8,2),(9,2),(12,2),(14,2),(10,5),(11,5),(15,5),(13,6);
 /*!40000 ALTER TABLE `blog_item_category` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `blog_revision`
+--
+
+LOCK TABLES `blog_revision` WRITE;
+/*!40000 ALTER TABLE `blog_revision` DISABLE KEYS */;
+/*!40000 ALTER TABLE `blog_revision` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -138,4 +147,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-06 22:28:06
+-- Dump completed on 2024-02-10 16:24:51
