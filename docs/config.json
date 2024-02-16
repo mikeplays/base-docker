@@ -1,0 +1,17 @@
+{
+  "title": "Base-Docker Interactive Dev Environment",
+  "contents": [
+    {
+      "file": "README.md",
+      "title": "Readme Doc"
+    },
+    {
+      "file": "./docs/windows.md",
+      "title": "Windows instructions"
+    },
+    {
+      "file": "./docs/raspberrypi.md",
+      "title": "Raspberry Pi instructions"
+    }
+  ]
+}
