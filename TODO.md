@@ -13,5 +13,5 @@ Blog QS
 Base Docker
 ---
 * ~Get env working on pi (arm64)~
-* Add pi host instructions doc
+* ~Add pi host instructions doc~
 * Fix xdebug/phpstorm integration
