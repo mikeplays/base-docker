@@ -69,9 +69,9 @@ like so:
 
 <pre><code class="language-bash">ansible-playbook ../main.yml -e "op=switch cb=a.ce"
 
-    # becomes:
+# becomes:
 
-    ansible-playbook ../main.yml -e "op=switch cb=a.ce variable_host=node"
+ansible-playbook ../main.yml -e "op=switch cb=a.ce variable_host=node"
 </code></pre>
 
     

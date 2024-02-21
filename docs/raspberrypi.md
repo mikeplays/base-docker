@@ -41,7 +41,7 @@ cd base-docker
 
 Create a `/etc/hosts` file entry for `www.dev.org`:
 
-<pre><code class="language-bash">127.0.0.1	localhost www.dev.org
+<pre><code class="lang-vim">127.0.0.1	localhost www.dev.org
 </code></pre>
 
 ##### Initialise virtualenv within root directory of `base-docker` on your machine:
