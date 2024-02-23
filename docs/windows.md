@@ -33,8 +33,8 @@ Open the `hosts` file at the following path:
 
 Ensure that these entries are added to the hosts file:
 
-<pre><code class="language-bash">192.168.56.211	node www.dev.org
-    192.168.56.212	control
+<pre><code class="language-vim">192.168.56.211	node www.dev.org
+192.168.56.212	control
 </code></pre>
 
 Finally, use git bash again and ensure you have changed to the base-docker directory
@@ -61,10 +61,9 @@ and change into the `vagrant` directory:
 cd ./files/vagrant
 </code></pre>
 
-Then, run the following command:
 
 
-Secondly  whenever running the `main.yml` playbook (for any reason) you must pass the target host `node` as a variable, 
+Secondly, whenever running the `main.yml` playbook (for any reason) you must pass the target host `node` as a variable, 
 like so:
 
 <pre><code class="language-bash">ansible-playbook ../main.yml -e "op=switch cb=a.ce"
@@ -74,6 +73,7 @@ like so:
 ansible-playbook ../main.yml -e "op=switch cb=a.ce variable_host=node"
 </code></pre>
 
+This ensure the `node` VM is targeted instead of the local host computer.
     
 
 
