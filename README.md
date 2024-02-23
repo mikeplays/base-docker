@@ -25,7 +25,7 @@ Getting starting
 
 Create a `/etc/hosts` file entry for `www.dev.org`:
 
-<pre><code class="language-bash">127.0.0.1	localhost www.dev.org
+<pre><code class="language-vim">127.0.0.1	localhost www.dev.org
 </code></pre>
 
 
