@@ -4,6 +4,8 @@
   vars:
     arch_string: "{{ (arch is defined) | ternary(arch, '') }}"
     use_arch: "{{ (arch_string == 'pi') | ternary('pi', '') }}"
+    use_host: "{{ (h is defined) | ternary(h, 'www.dev.org') }}"
+    use_project: "{{ (cb is defined) | ternary(cb, 'my_project') }}"
   tasks:        
     - name: create config directory
       file:

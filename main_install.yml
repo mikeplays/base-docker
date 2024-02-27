@@ -2,12 +2,12 @@
 
 - name: detect composer
   stat:
-    path: "{{ code_dir }}/{{ project }}/composer.phar"
+    path: "{{ code_dir }}/{{ use_project }}/composer.phar"
   register: st
 - name: download composer
   ansible.builtin.get_url:
     url: https://getcomposer.org/composer.phar
-    dest: "{{ code_dir }}/{{ project }}"
+    dest: "{{ code_dir }}/{{ use_project }}"
   when: not st.stat.exists
 - name: composer install
   shell: docker exec -i -u www-data app php ./composer.phar install -q --prefer-source
@@ -16,18 +16,18 @@
     command: docker exec -i -u www-data app php ./vendor/bin/empathy --new_app
     responses:
       'Please enter document root': "/var/www/project"
-      'Please enter name': "{{ project }}"
+      'Please enter name': "{{ use_project }}"
       'Please enter web root': "www.dev.org"
     echo: true
   when: operation == "qs"
 - name: add bootstrap theming
   copy:
     src: "{{ playbook_dir }}/env/templates/elib-blog/public_html/css/scss/_variables.scss"
-    dest: "{{ code_dir }}/{{ project }}/public_html/css/scss/_variables.scss"
+    dest: "{{ code_dir }}/{{ use_project }}/public_html/css/scss/_variables.scss"
   when: operation == "qs" and template == "elib-blog"
 - name: clear node_modules
   file:
-    path: "{{ code_dir }}/{{ project }}/node_modules"
+    path: "{{ code_dir }}/{{ use_project }}/node_modules"
     state: absent
 - name: npm install
   shell: docker exec -i -u www-data app npm install --no-bin-links
