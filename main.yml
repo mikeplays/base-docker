@@ -5,11 +5,18 @@
 
 - hosts: "{{ variable_host | default('control') }}"
   vars:
-    project_ini_string: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
-    saved_project: "{{ lookup('ini', project_ini_string) }}"
+    project_ini: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
+    saved_project: "{{ lookup('ini', project_ini) }}"
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
-    project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
+    use_project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
     template: "{{ (tpl is defined) | ternary(tpl, 'vanilla') }}"
+    qs_branch: "{{ (template == 'elib-blog') | ternary('bootstrap4', 'master') }}"
+    arch_ini: "arch section=Settings file={{ settings_dir }}/{{ settings_file }}"
+    saved_arch: "{{ lookup('ini', arch_ini) }}"
+    use_arch: "{{ (saved_arch == 'pi') | ternary('pi', '') }}"
+    host_ini: "host section=Settings file={{ settings_dir }}/{{ settings_file }}"
+    saved_host: "{{ lookup('ini', host_ini) }}"
+    use_host: "{{ (saved_host != '') | ternary(saved_host, 'www.dev.org') }}"
   gather_facts: no
   tasks:
     - name: default
@@ -52,31 +59,23 @@
           ansible.builtin.wait_for:
             port: 3306
             delay: 20
+            host: "{{ use_host }}"
         - name: detect build
           stat:
-            path: "{{ code_dir }}/{{ project }}/vendor"
+            path: "{{ code_dir }}/{{ use_project }}/vendor"
           register: st
         - name: install
           include_tasks: "{{ playbook_dir }}/main_install.yml"
           when: st.stat.exists == false
         - name: configure
-          shell: |
-            docker exec -u www-data app php ./vendor/bin/empathy --set_docroot /var/www/project
-            docker exec -u www-data app php ./vendor/bin/empathy --set_webroot www.dev.org
-            docker exec -u www-data app php ./vendor/bin/empathy --set_publicdir ""
-            docker exec -u www-data app php ./vendor/bin/empathy --misc tpl_cache
-            docker exec -u www-data app php ./vendor/bin/empathy --set_dbserver db
-            docker exec -u www-data app php ./vendor/bin/empathy --set_dbuser root
-            docker exec -u www-data app php ./vendor/bin/empathy --set_dbpass example
-            docker exec -u www-data app php ./vendor/bin/empathy --set_dbname project
-          when: st.stat.exists == false
+          include_tasks: "{{ playbook_dir }}/main_configure.yml"
         - name: detect db setup file
           stat:
-            path: "{{ code_dir }}/{{ project }}/setup.sql"
+            path: "{{ code_dir }}/{{ use_project }}/setup.sql"
           register: stsetup
         - name: detect db dump file
           stat:
-            path: "{{ code_dir }}/{{ project }}/dump.sql"
+            path: "{{ code_dir }}/{{ use_project }}/dump.sql"
           register: stdump
         - name: populate db (dump)
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql populate"
@@ -94,7 +93,7 @@
       block:
         - name: detect dir name
           stat:
-            path: "{{ code_dir }}/{{ project }}"
+            path: "{{ code_dir }}/{{ use_project }}"
           register: st
         - name: exit if dir exists
           ansible.builtin.fail:
@@ -102,12 +101,12 @@
           when: st.stat.exists == true
         - name: create directory
           file:
-            path: "{{ code_dir }}/{{ project }}"
+            path: "{{ code_dir }}/{{ use_project }}"
             state: directory
         - name: populate composer config
           template:
             src: "{{ playbook_dir }}/env/templates/vanilla/composer.j2"
-            dest: "{{ code_dir }}/{{ project }}/composer.json"
+            dest: "{{ code_dir }}/{{ use_project }}/composer.json"
         - name: install python docker deps
           pip:
             virtualenv: "{{ virtualenv_dir }}"
@@ -136,6 +135,8 @@
             state: present
         - name: install
           include_tasks: "{{ playbook_dir }}/main_install.yml"
+        - name: configure
+          include_tasks: "{{ playbook_dir }}/main_configure.yml"
         - name: save settings
           include_tasks: "{{ playbook_dir }}/main_save_settings.yml"
       when: operation == "qs"
@@ -144,7 +145,7 @@
         - name: populate elib.yml
           template:
             src: "{{ playbook_dir }}/env/templates/elib-base/elib.j2"
-            dest: "{{ code_dir }}/{{ project }}/elib.yml"
+            dest: "{{ code_dir }}/{{ use_project }}/elib.yml"
         - name: enable elib
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --set_elib"
         - name: get installed elibs
@@ -152,7 +153,7 @@
           register: installed_elibs
         - name: set installed libs list
           ansible.builtin.set_fact:
-            installed_elibs_list: "{{ installed_elibs.stdout | from_json | reverse }}"
+            installed_elibs_list: "{{ installed_elibs.stdout | from_json }}"
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'dd.sql'
@@ -171,7 +172,7 @@
         - name: populate setup.sql
           template:
             src: "{{ playbook_dir }}/env/templates/elib-base/setup.j2"
-            dest: "{{ code_dir }}/{{ project }}/setup.sql"
+            dest: "{{ code_dir }}/{{ use_project }}/setup.sql"
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'dm.sql'
@@ -184,7 +185,7 @@
         - name: populate inserts.sql
           template:
             src: "{{ playbook_dir }}/env/templates/elib-base/inserts.j2"
-            dest: "{{ code_dir }}/{{ project }}/inserts.sql"
+            dest: "{{ code_dir }}/{{ use_project }}/inserts.sql"
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'inserts.sql'
@@ -209,7 +210,7 @@
         # overwrite dm.sql
         - name: read dm.sql
           slurp:
-            src: "{{ code_dir }}/{{ project }}/vendor/mikejw/elib-acl/dm.sql"
+            src: "{{ code_dir }}/{{ use_project }}/vendor/mikejw/elib-acl/dm.sql"
           register: data
         - name: initialise data array
           ansible.builtin.set_fact:
@@ -217,25 +218,13 @@
         - name: populate inserts.sql
           template:
             src: "{{ playbook_dir }}/env/templates/elib-base/inserts.j2"
-            dest: "{{ code_dir }}/{{ project }}/inserts.sql"
+            dest: "{{ code_dir }}/{{ use_project }}/inserts.sql"
         - name: 'set file name'
           ansible.builtin.set_fact:
             input_file: 'inserts.sql'
         - name: lint
           include_tasks: "{{ playbook_dir }}/main_lint_sql.yml"
         # setup plugins
-        - name: set json view plugin config config
-          ansible.builtin.set_fact:
-            json:
-              api: { 'pretty_print': true }
-        - name: set json view plugin config
-          ansible.builtin.set_fact:
-            json:
-              name: JSONView
-              version: 1.0
-              config: "{{ json | to_json }}"
-        - name: assert json view plugin
-          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
         - name: set acl plugin config
           ansible.builtin.set_fact:
             json:
@@ -249,12 +238,12 @@
               name: JSONView
               version: "1.0"
               config: '[{ "api": {} }, { "api2": {} }, { "api3": {} }]'
-        - name: assert acl plugin
+        - name: assert json view plugin
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
         # modify elib
         - name: open elib config
           slurp:
-            path: "{{ code_dir }}/{{ project }}/elib.yml"
+            path: "{{ code_dir }}/{{ use_project }}/elib.yml"
           register: r_elibconfig
         - name: read yaml
           set_fact:
@@ -268,16 +257,16 @@
         - name: write yaml
           copy:
             content: '{{ elibconfigdata | to_nice_yaml }}'
-            dest: "{{ code_dir }}/{{ project }}/elib.yml"
+            dest: "{{ code_dir }}/{{ use_project }}/elib.yml"
         # templates    
         - name: populate services.php
           template:
             src: "{{ playbook_dir }}/env/templates/elib-acl/services.j2"
-            dest: "{{ code_dir }}/{{ project }}/services.php" 
+            dest: "{{ code_dir }}/{{ use_project }}/services.php"
         - name: populate admin.php
           template:
             src: "{{ playbook_dir }}/env/templates/elib-acl/application/admin.j2"
-            dest: "{{ code_dir }}/{{ project }}/application/admin/admin.php"
+            dest: "{{ code_dir }}/{{ use_project }}/application/admin/admin.php"
         - name: generate api module
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod api"
         - name: clear cache 
@@ -286,21 +275,117 @@
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
         - name: create module dir api2
           file:
-            path: "{{ code_dir }}/{{ project }}/application/api2"
+            path: "{{ code_dir }}/{{ use_project }}/application/api2"
             state: directory
         - name: create module dir api3
           file:
-            path: "{{ code_dir }}/{{ project }}/application/api3"
+            path: "{{ code_dir }}/{{ use_project }}/application/api3"
             state: directory
         - name: populate api2.php
           template:
             src: "{{ playbook_dir }}/env/templates/elib-acl/application/api2.j2"
-            dest: "{{ code_dir }}/{{ project }}/application/api2/api2.php"
+            dest: "{{ code_dir }}/{{ use_project }}/application/api2/api2.php"
         - name: populate api3.php
           template:
             src: "{{ playbook_dir }}/env/templates/elib-acl/application/api3.j2"
-            dest: "{{ code_dir }}/{{ project }}/application/api3/api3.php"
+            dest: "{{ code_dir }}/{{ use_project }}/application/api3/api3.php"
       when: operation == "qs" and template == "elib-acl"
-
+    - name: qs elib-blog template
+      block:
+        - name: debug branch
+          debug:
+            var: qs_branch
+        - name: generate front blog module
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod blog"
+        - name: generate front blog feed module
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod feed"
+        - name: populate db
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
+        # modify elib
+        - name: open elib config
+          slurp:
+            path: "{{ code_dir }}/{{ use_project }}/elib.yml"
+          register: r_elibconfig
+        - name: read yaml
+          set_fact:
+            elibconfigdata: "{{ r_elibconfig['content'] | b64decode | from_yaml }}"
+        - name: patch yaml
+          set_fact:
+            elibconfigdata: "{{ elibconfigdata | combine(newdata, recursive=True) }}"
+          vars:
+            newdata:
+              blog_title: An Empathy Blog
+              blog_description: Some words from me
+              truncate_blog_items: true
+              fetch_blog_images: false
+              def_blog_category: 0
+              def_blog_per_page: 3
+              blog_social_links: '{ "X": "https://twitter.com/mikejw" }'
+        - name: write yaml
+          copy:
+            content: '{{ elibconfigdata | to_nice_yaml }}'
+            dest: "{{ code_dir }}/{{ use_project }}/elib.yml"
+        - name: copy application files
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/application/"
+            dest: "{{ code_dir }}/{{ use_project }}/application"
+        - name: copy tpl files
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/tpl/"
+            dest: "{{ code_dir }}/{{ use_project }}/presentation"
+        - name: copy htaccess files
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/public_html/htaccess"
+            dest: "{{ code_dir }}/{{ use_project }}/public_html/.htaccess"
+        - name: copy public files
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/public_html/"
+            dest: "{{ code_dir }}/{{ use_project }}/public_html"
+        - name: set redbean plugin
+          ansible.builtin.set_fact:
+            json:
+              name: Redbean
+              version: "1.0"
+        - name: assert redbean plugin
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
+        - name: set site info plugin
+          ansible.builtin.set_fact:
+            json:
+              name: Empathy\ELib\MVC\Plugin\SiteInfo
+              version: "1.0"
+        - name: assert site info plugin
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --assert_plugin '{{ json | to_json }}'"
+        - name: disable error handling
+          ansible.builtin.lineinfile:
+            path: "{{ code_dir }}/{{ use_project }}/config.yml"
+            regexp: 'handle_errors'
+            line: "  handle_errors: false"
+        - name: enable apcu debug
+          ansible.builtin.lineinfile:
+            path: "{{ code_dir }}/{{ use_project }}/services.php"
+            regexp: 'ApcuDebug'
+            line: "    'ApcuDebug' => true,"
+        - name: set default module
+          ansible.builtin.lineinfile:
+            path: "{{ code_dir }}/{{ use_project }}/config.yml"
+            regexp: 'default_module'
+            line: "  default_module: blog"
+        - name: populate services.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/services.j2"
+            dest: "{{ code_dir }}/{{ use_project }}/services.php"
+        - name: create uploads dir
+          file:
+              path: "{{ code_dir }}/{{ use_project }}/public_html/uploads"
+              state: directory
+        - name: clear cache
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --clear_cache"
+        - name: copy dump file
+          copy:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/dump.sql"
+            dest: "{{ code_dir }}/{{ use_project }}"
+        - name: populate db
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql populate"
+      when: operation == "qs" and template == "elib-blog"
 
 

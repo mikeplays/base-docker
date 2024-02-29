@@ -3,11 +3,11 @@
 
 - name: detect file
   stat:
-    path: "{{ code_dir }}/{{ project }}/vendor/{{ item }}/{{ input_file }}"
+    path: "{{ code_dir }}/{{ use_project }}/vendor/{{ item }}/{{ input_file }}"
   register: st
 - name: read file
   slurp:
-    src: "{{ code_dir }}/{{ project }}/vendor/{{ item }}/{{ input_file }}"
+    src: "{{ code_dir }}/{{ use_project }}/vendor/{{ item }}/{{ input_file }}"
   register: data
   when: st.stat.exists
 - name:

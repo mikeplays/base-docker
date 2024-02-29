@@ -17,7 +17,7 @@ at the "Usage" section.
 Licence
 ---
 Now distributed under an
-MIT license.  See [LICENSE.txt](./LICENSE.txt).
+MIT license.  See [LICENSE](./LICENSE).
 
 
 Getting starting
@@ -25,14 +25,15 @@ Getting starting
 
 Create a `/etc/hosts` file entry for `www.dev.org`:
 
-
-    127.0.0.1	localhost www.dev.org
+<pre><code class="language-vim">127.0.0.1	localhost www.dev.org
+</code></pre>
 
 
 Initialise virtualenv within root directory of `base-docker` on your machine. (E.g. for macOS):
 
-    brew install virtualenv
-    virtualenv ./python
+<pre><code class="language-bash">brew install virtualenv
+virtualenv ./python
+</code></pre>
 
 
 Usage
@@ -40,23 +41,26 @@ Usage
 
 ##### Initialise config on new machine:
 
-    cd ansible
-    ansible-playbook ../init.yml
+<pre><code class="language-bash">cd ansible
+ansible-playbook ../init.yml
+</code></pre>
 
 (Creates settings file in ~/.config)
 
 ##### Switch project:
 
-    cd ansible
-    ansible-playbook ../main.yml -e "op=switch cb=a.ce"
+<pre><code class="language-bash">cd ansible
+ansible-playbook ../main.yml -e "op=switch cb=a.ce"
+</code></pre>
 
 In the above example the project found in `~/code/a.ce` will be set as active.
-    
+
 
 ##### Boot current project:
 
-    cd ansible
-    ansible-playbook ../main.yml -e "op=boot"
+<pre><code class="language-bash">cd ansible
+ansible-playbook ../main.yml -e "op=boot"
+</code></pre>
 
 
 ##### Quick-start commands
@@ -68,8 +72,9 @@ Others available are "elib-base", "elib-acl".
 
 Will fail if codebase path already exists.
 
-    cd ansible
-    ansible-playbook ../main.yml -e "op=qs cb=myproject tpl=elib-base"
+<pre><code class="language-bash">cd ansible
+ansible-playbook ../main.yml -e "op=qs cb=myproject tpl=elib-base"
+</code></pre>
 
 
 Caveats
@@ -79,11 +84,13 @@ The default `app` container has apcu cache enabled for reading `config.yml` file
 
 Restart the app container after making changes to these files.
 
-    docker stop app
-    docker start app
+<pre><code class="language-bash">docker stop app
+docker start app
+</code></pre>
 
 Ansible my have trouble connecting to Docker Desktop on macOS when running docker tasks.  If 
 this happens run this command:
 
-    sudo ln -s "$HOME/.docker/run/docker.sock" /var/run/docker.sock
+<pre><code class="language-bash">sudo ln -s "$HOME/.docker/run/docker.sock" /var/run/docker.sock
+</code></pre>
 

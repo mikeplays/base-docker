@@ -4,23 +4,30 @@ services:
   cache:
     container_name: cache
     image: memcached:1.6.10
+{% if use_arch != 'pi' %}
     platform: linux/x86_64
+{% endif %}
   app:
     container_name: app
+{% if use_arch != 'pi' %}
     platform: linux/x86_64
-    image: registry.gitlab.com/mikejw/empathy/app-php-dev-wnode:latest
+{% endif %}
+    image: registry.gitlab.com/mikejw/empathy/app-php-dev-wnode:{% if use_arch == 'pi' %}arm64{% else %}latest{% endif +%}
     environment:
-      - VIRTUAL_HOST=www.dev.org
+      - VIRTUAL_HOST={{ use_host }}
       - VIRTUAL_PORT=80
     volumes:
-      - {{ code_dir }}/{{ project }}:/var/www/project
+      - {{ code_dir }}/{{ use_project }}:/var/www/project
       - /etc/localtime:/etc/localtime:ro
   db:
     container_name: db
+{% if use_arch != 'pi' %}
     platform: linux/x86_64
-    image: mysql:5.7
+{% endif %}
+    image: mysql:latest
     volumes:
       - "./db/log:/var/log/mysql"
+      #- "./db/default.cnf:/etc/mysql/conf.d/default.cnf"
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
     environment:
