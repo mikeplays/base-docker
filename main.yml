@@ -10,7 +10,7 @@
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
     use_project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
     template: "{{ (tpl is defined) | ternary(tpl, 'vanilla') }}"
-    qs_branch: "{{ (template == 'elib-blog') | ternary('feature/blog-revisions', 'master') }}"
+    qs_branch: "{{ (template == 'elib-blog') | ternary('bootstrap4', 'master') }}"
     arch_ini: "arch section=Settings file={{ settings_dir }}/{{ settings_file }}"
     saved_arch: "{{ lookup('ini', arch_ini) }}"
     use_arch: "{{ (saved_arch == 'pi') | ternary('pi', '') }}"
