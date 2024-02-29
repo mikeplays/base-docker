@@ -65,12 +65,12 @@ ansible-playbook ../main.yml -e "op=boot"
 
 ##### Quick-start commands
 
-Boostrap Empathy projects giving target extension name. Template default is "vanilla" for
-base empathy app with no extensions.  
+Boostrap Empathy projects giving target extension template name. Template default is "vanilla" for
+base empathy app with no extensions, (when no argument is provided).  
 
-Others available are "elib-base", "elib-acl".
+Others available are "elib-base", "elib-acl" and "elib-blog".
 
-Will fail if codebase path already exists.
+The playbook will fail if codebase path already exists.
 
 <pre><code class="language-bash">cd ansible
 ansible-playbook ../main.yml -e "op=qs cb=myproject tpl=elib-base"
