@@ -46,6 +46,18 @@
                 showArrows: false
             });
         });
+
+      $('.revision-select select').on('change', function() {
+        var $this = $(this);
+        if (confirm('Are you sure you want to load a different blog item revision?')) {
+          window.location.href = '?revision=' + $this.val();
+        }
+
+        return false;
+      });
+
+
+
     });
 </script>
 
