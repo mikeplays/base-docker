@@ -123,6 +123,10 @@ ol, ul {
     margin-top: 2rem;
 }
 
+.sidebar-module .fa {
+    width: 1rem;
+}
+
 .blog-sidebar .sidebar-module:first-child {
     margin-top: 0;
 }
