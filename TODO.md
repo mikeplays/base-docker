@@ -17,3 +17,7 @@ Base Docker
 * Fix xdebug/phpstorm integration
 * ~Allow dev environment hostname to be configured (using init.yml)~
 
+elib-siteinfo
+--
+
+* is reading settings cached???
