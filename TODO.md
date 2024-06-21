@@ -1,5 +1,12 @@
 
 
+Empathy / ELib Blog
+---
+
+* Generic handling for filtering interger GET params.
+  (See Empathy\ELib\Blog\ControllerTrait.php (default_event)
+  => use this for GET ids?
+
 Blog QS
 ---
 
