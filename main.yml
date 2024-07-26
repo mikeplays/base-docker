@@ -27,18 +27,8 @@
       when: operation == "none"
     - name: boot
       block:
-        - name: install python docker deps
-          pip:
-            virtualenv: "{{ virtualenv_dir }}"
-            name:
-              - cython<3.0.0
-              - docker==6.1.3
-        - name: install python docker
-          pip:
-            virtualenv: "{{ virtualenv_dir }}"
-            name:
-              - docker-compose
-            extra_args: --no-build-isolation
+        - name: install pip packages
+          include_tasks: "{{ playbook_dir }}/main_pip.yml"
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
@@ -107,20 +97,8 @@
           template:
             src: "{{ playbook_dir }}/env/templates/vanilla/composer.j2"
             dest: "{{ code_dir }}/{{ use_project }}/composer.json"
-        - name: install python docker deps
-          pip:
-            virtualenv: "{{ virtualenv_dir }}"
-            name:
-              - cython<3.0.0
-              - docker==6.1.3
-        - name: install python docker
-          pip:
-            virtualenv: "{{ virtualenv_dir }}"
-            name:
-              - docker-compose
-              - pexpect
-              - sqlfluff
-            extra_args: --no-build-isolation
+        - name: install pip packages
+          include_tasks: "{{ playbook_dir }}/main_pip.yml"
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"

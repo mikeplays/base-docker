@@ -1,0 +1,19 @@
+
+# pip package "packaging" must already be installed on system
+
+- name: install python docker deps
+  pip:
+    virtualenv: "{{ virtualenv_dir }}"
+    name:
+      - setuptools
+      - cython<3.0.0
+      - docker==6.1.3
+      - requests<2.32.0
+- name: install python docker
+  pip:
+    virtualenv: "{{ virtualenv_dir }}"
+    name:
+      - docker-compose
+      - pexpect
+      - sqlfluff
+    extra_args: --no-build-isolation
