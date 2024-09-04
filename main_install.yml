@@ -9,6 +9,8 @@
     url: https://getcomposer.org/composer.phar
     dest: "{{ code_dir }}/{{ use_project }}"
   when: not st.stat.exists
+- name:  git safe directories
+  shell: docker exec -i -u www-data app  git config --global --add safe.directory '*'
 - name: composer install
   shell: docker exec -i -u www-data app php ./composer.phar install -q --prefer-source
 - name: set up app

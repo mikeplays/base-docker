@@ -10,7 +10,7 @@
     operation: "{{ (op is defined) | ternary(op, 'none') }}"
     use_project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
     template: "{{ (tpl is defined) | ternary(tpl, 'vanilla') }}"
-    qs_branch: "{{ (template == 'elib-blog') | ternary('bootstrap4', 'master') }}"
+    qs_branch: "{{ (template == 'elib-blog' or template == 'elib-cms') | ternary('bootstrap4', 'master') }}"
     arch_ini: "arch section=Settings file={{ settings_dir }}/{{ settings_file }}"
     saved_arch: "{{ lookup('ini', arch_ini) }}"
     use_arch: "{{ (saved_arch == 'pi') | ternary('pi', '') }}"
@@ -266,11 +266,19 @@
             src: "{{ playbook_dir }}/env/templates/elib-acl/application/api3.j2"
             dest: "{{ code_dir }}/{{ use_project }}/application/api3/api3.php"
       when: operation == "qs" and template == "elib-acl"
+    - name: qs elib-cms template
+      block:
+        - name: populate services.php
+          template:
+            src: "{{ playbook_dir }}/env/templates/elib-blog/services.j2"
+            dest: "{{ code_dir }}/{{ use_project }}/services.php"
+        - name: clear cache
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --clear_cache"
+        - name: populate db
+          command: "docker exec -i -u www-data app php ./vendor/bin/empathy --mysql setup"
+      when: operation == "qs" and template == "elib-cms"
     - name: qs elib-blog template
       block:
-        - name: debug branch
-          debug:
-            var: qs_branch
         - name: generate front blog module
           command: "docker exec -i -u www-data app php ./vendor/bin/empathy --inst_mod blog"
         - name: generate front blog feed module
