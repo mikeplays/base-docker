@@ -45,7 +45,7 @@ services:
       - 80:80
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-#      - ./env/cors-per-host:/etc/nginx/vhost.d/www.dev.org_location
+      - ./env/vhost.d:/etc/nginx/vhost.d
 
 # networks:
 #   default:
