@@ -19,6 +19,8 @@
     use_host: "{{ (saved_host != '') | ternary(saved_host, 'www.dev.org') }}"
   gather_facts: no
   tasks:
+    - name: install pip packages
+      include_tasks: "{{ playbook_dir }}/main_pip.yml"
     - name: default
       block:
         - name: "show error"
@@ -27,18 +29,16 @@
       when: operation == "none"
     - name: boot
       block:
-        - name: install pip packages
-          include_tasks: "{{ playbook_dir }}/main_pip.yml"
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
             dest: "{{ playbook_dir }}/docker-compose.yml"
         - name: stop any existing containers
-          docker_compose:
+          community.docker.docker_compose_v2:
             project_src: "{{ playbook_dir }}"
             state: absent
         - name: boot containers
-          docker_compose:
+          community.docker.docker_compose_v2:
             project_src: "{{ playbook_dir }}"
             state: present
         # is below possible when
@@ -97,18 +97,16 @@
           template:
             src: "{{ playbook_dir }}/env/templates/vanilla/composer.j2"
             dest: "{{ code_dir }}/{{ use_project }}/composer.json"
-        - name: install pip packages
-          include_tasks: "{{ playbook_dir }}/main_pip.yml"
         - name: populate docker-compose
           template:
             src: "{{ playbook_dir }}/env/docker-compose.j2"
             dest: "{{ playbook_dir }}/docker-compose.yml"
         - name: stop any existing containers
-          docker_compose:
+          community.docker.docker_compose_v2:
             project_src: "{{ playbook_dir }}"
             state: absent
         - name: boot containers
-          docker_compose:
+          community.docker.docker_compose_v2:
             project_src: "{{ playbook_dir }}"
             state: present
         - name: install

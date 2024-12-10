@@ -1,5 +1,8 @@
 
 # pip package "packaging" must already be installed on system
+#
+# cd ./python/bin
+# ./pip3 install packaging
 
 - name: install python docker deps
   pip:
