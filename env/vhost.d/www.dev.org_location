@@ -4,6 +4,18 @@
 client_max_body_size 500m;
 
 
+# Enable cors for static files:
+# NB: the nested location block must repeat
+# previous directives a level higher
+#location ~* \.(mp3)$ {
+#    proxy_pass http://kristine;
+#    set $upstream_keepalive true;
+#
+#    add_header Access-Control-Allow-Origin *;
+#    expires max;
+#}
+
+
 # Enable cors by commenting out the following:
 #
 #    if ($request_method = 'OPTIONS') {
