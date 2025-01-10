@@ -18,6 +18,16 @@ services:
     volumes:
       - {{ code_dir }}/{{ use_project }}:/var/www/project
       - /etc/localtime:/etc/localtime:ro
+
+  # TODO: add log rotation
+  app-log:
+    container_name: app-log
+    platform: linux/x86_64
+    image: alpine:latest
+    volumes:
+      - {{ code_dir }}/{{ use_project }}/logs/main.log:/home/main.log
+    command: tail -f /home/main.log
+        
   db:
     container_name: db
 {% if use_arch != 'pi' %}
