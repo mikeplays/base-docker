@@ -1,3 +1,5 @@
+#jinja2: trim_blocks:False
+
 ---
 services:
   cache:
@@ -18,6 +20,16 @@ services:
     volumes:
       - {{ code_dir }}/{{ use_project }}:/var/www/project
       - /etc/localtime:/etc/localtime:ro
+
+  # TODO: add log rotation
+  app-log:
+    container_name: app-log
+    platform: linux/x86_64
+    image: alpine:latest
+    volumes:
+      - {{ code_dir }}/{{ use_project }}/logs/main.log:/home/main.log
+    command: tail -f /home/main.log
+        
   db:
     container_name: db
 {% if use_arch != 'pi' %}
@@ -35,6 +47,10 @@ services:
     ports:
       - 3306:3306
 
+
+{{ partial_text }}
+
+
 # if using 'global' nginx proxy setup
 # this contiainer is not required
 # and specify (uncomment) the network settings below
@@ -45,7 +61,7 @@ services:
       - 80:80
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-#      - ./env/cors-per-host:/etc/nginx/vhost.d/www.dev.org_location
+      - ./env/vhost.d:/etc/nginx/vhost.d
 
 # networks:
 #   default:

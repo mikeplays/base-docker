@@ -23,16 +23,54 @@ MIT license.  See [LICENSE](./LICENSE).
 Getting starting
 ---
 
-Create a `/etc/hosts` file entry for `www.dev.org`:
+##### Decide your local hostname:
+
+Decide which local hostname you will be using for development.
+
+The recommended custom hostname is `www.dev.org`.
+
+You might decide to use an IP address instead (useful for testing from another device on your network), 
+`localhost`, or something else entirely.
+
+If you decide to use something other than `www.dev.org`, even if it is an IP address or is another custom hostname,
+make a note of it now.
+
+
+##### Hosts file entry for `www.dev.org` or custom hostname:
+
+Whether you are going with the default hostname `www.dev.org` or something custom, create a `/etc/hosts` file entry for
+it now if it is *not* a system default hostname. (IP address or `localhost`.) `www.dev.org` is being used
+in the following example:
 
 <pre><code class="language-vim">127.0.0.1	localhost www.dev.org
 </code></pre>
 
+##### Virtualenv in `./python`:
 
-Initialise virtualenv within root directory of `base-docker` on your machine. (E.g. for macOS):
+Initialise virtualenv within the root directory of `base-docker` on your machine. (E.g. for macOS):
+
 
 <pre><code class="language-bash">brew install virtualenv
 virtualenv ./python
+</code></pre>
+
+
+##### Install `pip` package `packaging`:
+
+This package is a pre-requisite before pip packages can be installed through Ansible.
+
+Install it manually now:
+
+<pre><code class="language-bash">cd ./python/bin
+./pip3 install packaging
+</code></pre>
+
+
+##### Install Anisble galaxy roles/collections:
+
+From the root `base-docker` directory, run the script as follows:
+
+<pre><code class="language-bash">./ansible-install.sh
 </code></pre>
 
 
@@ -45,7 +83,14 @@ Usage
 ansible-playbook ../init.yml
 </code></pre>
 
-(Creates settings file in ~/.config)
+This creates settings file for `base-docker` in `~/.config`.
+
+If you are using any hostname other than the default (`www.dev.org`), specify it with the `h` argument. E.g:
+
+<pre><code class="language-bash">cd ansible
+ansible-playbook ../init.yml -e "h=10.0.0.22"
+</code></pre>
+
 
 ##### Switch project:
 
@@ -63,7 +108,7 @@ ansible-playbook ../main.yml -e "op=boot"
 </code></pre>
 
 
-##### Quick-start commands
+##### Quick-start commands:
 
 Boostrap Empathy projects giving target extension template name. Template default is "vanilla" for
 base empathy app with no extensions, (when no argument is provided).  
