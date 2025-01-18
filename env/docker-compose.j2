@@ -1,3 +1,5 @@
+#jinja2: trim_blocks:False
+
 ---
 services:
   cache:
@@ -44,6 +46,10 @@ services:
       - MYSQL_DATABASE=project
     ports:
       - 3306:3306
+
+
+{{ partial_text }}
+
 
 # if using 'global' nginx proxy setup
 # this contiainer is not required

@@ -3,6 +3,34 @@
 # "qs" = shortened for quick starts
 ---
 
+
+# partials!
+- hosts: "{{ variable_host | default('control') }}"
+  vars:
+    project_ini: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
+    saved_project: "{{ lookup('ini', project_ini) }}"
+    use_project: "{{ (cb is defined) | ternary(cb, saved_project) }}"
+    env: "development"
+    branch_id: ""
+    host_ini: "host section=Settings file={{ settings_dir }}/{{ settings_file }}"
+    saved_host: "{{ lookup('ini', host_ini) }}"
+    use_host: "{{ (saved_host != '') | ternary(saved_host, 'www.dev.org') }}"
+    host_project_path: ""
+  tasks:
+    - name: detect services partial
+      stat:
+        path: "{{ code_dir }}/{{ use_project }}/env/docker-partial.j2"
+      register: st
+    - name: output stat
+      debug:
+        var: st
+    - name: populate docker-compose partial
+      template:
+        src: "{{ code_dir }}/{{ use_project }}/env/docker-partial.j2"
+        dest: "{{ playbook_dir }}/docker-compose.partial.yml"
+      when: st.stat.exists == true
+
+
 - hosts: "{{ variable_host | default('control') }}"
   vars:
     project_ini: "project section=Settings file={{ settings_dir }}/{{ settings_file }}"
@@ -17,6 +45,8 @@
     host_ini: "host section=Settings file={{ settings_dir }}/{{ settings_file }}"
     saved_host: "{{ lookup('ini', host_ini) }}"
     use_host: "{{ (saved_host != '') | ternary(saved_host, 'www.dev.org') }}"
+    partial_file: "{{ playbook_dir }}/docker-compose.partial.yml"
+    partial_text: "{{ lookup('file', partial_file, lstrip=false, rstrip=false, errors='ignore') }}"
   gather_facts: no
   tasks:
     - name: install pip packages

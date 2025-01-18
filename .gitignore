@@ -1,10 +1,13 @@
 *~
 
+._*
+
 .DS_Store
 /.vagrant
 /.idea
 /db/log
 /docker-compose.yml
+/docker-compose.partial.yml
 /python
 /react.log
 /vendor
