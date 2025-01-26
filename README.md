@@ -16,8 +16,8 @@ at the "Usage" section.
 
 Licence
 ---
-Now distributed under an
-MIT license.  See [LICENSE](./LICENSE).
+Distributed under an Artistic License.
+See [LICENSE](./LICENSE).
 
 
 Getting starting
